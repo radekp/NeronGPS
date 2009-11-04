@@ -1,0 +1,15 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Name=NeronGPS.desktop
+Comment[]=GPS Application
+Exec=NeronGPS
+Icon=NeronGPS.png
+Type=Application
+Name[]=NeronGPS
+Name[en_US]=NeronGPS.desktop
+GenericName[en_US]=
+
+[Translation]
+File=NeronGPS-nct
+Context=NeronGPS
