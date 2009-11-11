@@ -34,12 +34,12 @@ TTileHttpName::~TTileHttpName()
 
 QString TTileHttpName::defaultServer()
 {
-	return "OSM_road";
+	return "osm_road";
 }
 
 QString TTileHttpName::initDefault(TSettings &settings)
 {
-	QString defaultServer("OSM");
+	QString defaultServer("osm");
 
 	settings.beginGroup(defaultServer);
 	settings.setValue("servers", "road");
