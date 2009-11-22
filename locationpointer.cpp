@@ -71,7 +71,7 @@ void TLocationPointer::draw(QPainter &painter, TDrawState &drawState)
 
 		painter.save();
 		painter.translate(drawState.locationX(), drawState.locationY());
-		painter.rotate(drawState.validAngle() ? drawState.currentAngle() : 0);
+		painter.rotate(drawState.currentAngle());
 
 		painter.setPen(pen);
 		painter.setBrush(brush);

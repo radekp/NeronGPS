@@ -26,6 +26,8 @@
 #include <QQueue>
 #include <QMutex>
 
+#include "include/settings.h"
+
 #define STAT_INVALID_SPEED	(-100000)
 #define STAT_INVALID_ALTITUDE	(-100000)
 
@@ -36,6 +38,7 @@ class TGpsStatistics : public QObject
 		TGpsStatistics();
 		~TGpsStatistics();
 
+		void configure(TSettings &settings, const QString &section);
 		void resend();
 
 	public slots:
@@ -47,6 +50,9 @@ class TGpsStatistics : public QObject
 
 	private:
 		QMutex _mutex;
+
+		int _accuracy;
+		uint _lostTime;
 
 		bool _first;
 		uint _beginning;

@@ -54,7 +54,6 @@ class TDrawState : public QObject
 		int currentX() { return _currentX; }
 		int currentY() { return _currentY; }
 		qreal currentAngle() { return _currentAngle; }
-		bool validAngle() { return _validAngle; }
 		bool validPos() { return _validPos; }
 		bool fix() { return _fix; }
 		bool moving() { return _moving; }
@@ -71,7 +70,7 @@ class TDrawState : public QObject
 
 	public slots:
 		void slotGpsState(bool fix);
-		void slotGpsData(int x, int y, qreal angle, bool angleValid);
+		void slotGpsData(bool noise, int x, int y, qreal angle);
 		void slotSetZoom(int zoom);
 		void slotZoomPlus();
 		void slotZoomMinus();
@@ -107,13 +106,21 @@ class TDrawState : public QObject
 		int _currentX;
 		int _currentY;
 		qreal _currentAngle;
-		bool _validAngle;
 		bool _validPos;
 		bool _fix;
 		bool _auto;
 		bool _moving;
 		bool _displayAlwaysOn;
 
+		int _elasticityStartZoom;
+		int _elasticitySpeed;
+		int _elasticityTopBorder;
+		int _elasticityBottomBorder;
+		int _elasticityRightBorder;
+		int _elasticityLeftBorder;
+		float _currentElasticity;
+
+		void center();
 		void reloadTiles();
 		void moveTiles();
 };

@@ -58,6 +58,8 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 	_traces.configure(_settings, "traces");
 	_buttons.configure(_settings, "buttons");
 	_pointer.configure(_settings, "pointer");
+	_gpsData.configure(_settings, "gps");
+	_gpsStats.configure(_settings, "gps");
 
 	QMenu *contextMenu = QSoftMenuBar::menuFor(this);
 
@@ -121,7 +123,7 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 	_actions.connectToggle("Display trailer", true, &_traces, SLOT(slotDisplayTrailer(bool)));
 
 /*
-        QFile *sampleFile = new QFile(Qtopia::qtopiaDir() + "etc/whereabouts/nmea_sample.txt", this);
+        QFile *sampleFile = new QFile("/home/root/nmea_sample.txt", this);
         sampleFile->open(QIODevice::ReadOnly);
         QNmeaWhereabouts *whereabouts = new QNmeaWhereabouts(this);
         whereabouts->setUpdateMode(QNmeaWhereabouts::SimulationMode);
@@ -137,7 +139,7 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 	connect(_location, SIGNAL(updated(const QWhereaboutsUpdate &)), &_traces, SLOT(slotGpsData(const QWhereaboutsUpdate &)));
 	connect(_location, SIGNAL(updated(const QWhereaboutsUpdate &)), &_gpsStats, SLOT(slotGpsData(const QWhereaboutsUpdate &)));
 	connect(&_gpsState, SIGNAL(signalGpsState(bool)), &_drawState, SLOT(slotGpsState(bool)));
-	connect(&_gpsData, SIGNAL(signalGpsData(int, int, qreal, bool)), &_drawState, SLOT(slotGpsData(int, int, qreal, bool)));
+	connect(&_gpsData, SIGNAL(signalGpsData(bool, int, int, qreal)), &_drawState, SLOT(slotGpsData(bool, int, int, qreal)));
 	_location->startUpdates(1000); 
 
 	connect(&_traces, SIGNAL(signalTraceLoaded(int, int, int, int)), &_drawState, SLOT(slotCenterTo(int, int, int, int)));
