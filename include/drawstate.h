@@ -57,6 +57,7 @@ class TDrawState : public QObject
 		bool validPos() { return _validPos; }
 		bool fix() { return _fix; }
 		bool moving() { return _moving; }
+		bool autoOn() { return _autoOn; }
 		bool displayAlwaysOn() { return _displayAlwaysOn; }
 		const QString &httpServer() { return _httpName; }
 
@@ -108,7 +109,7 @@ class TDrawState : public QObject
 		qreal _currentAngle;
 		bool _validPos;
 		bool _fix;
-		bool _auto;
+		bool _autoOn;
 		bool _moving;
 		bool _displayAlwaysOn;
 

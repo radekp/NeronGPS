@@ -46,7 +46,7 @@ TDrawState::TDrawState()
 	_zoom = 0;
 	_centerX = 0;
 	_centerY = 0;
-	_auto = true;
+	_autoOn = true;
 	_validPos = false;
 	_fix = false;
 	_moving = false;
@@ -121,7 +121,7 @@ void TDrawState::slotSetZoom(int zoom)
 {
 	if(zoom != _zoom) {
 		_zoom = zoom;
-		if(_auto && _validPos) {
+		if(_autoOn && _validPos) {
 			center();
 		}
 		reloadTiles();
@@ -169,8 +169,8 @@ void TDrawState::slotMove(int offsetX, int offsetY)
 
 void TDrawState::slotAutoOn()
 {
-	if(!_auto) {
-		_auto = true;
+	if(!_autoOn) {
+		_autoOn = true;
 
 		if(_validPos) {
 			_centerX = _currentX;
@@ -185,8 +185,8 @@ void TDrawState::slotAutoOn()
 
 void TDrawState::slotAutoOff()
 {
-	if(_auto) {
-		_auto = false;
+	if(_autoOn) {
+		_autoOn = false;
 		emit signalActionState("Auto center", true, true);
 	}
 }
@@ -207,7 +207,7 @@ void TDrawState::slotGpsData(bool noise, int x, int y, qreal angle)
 	_currentX = x;
 	_currentY = y;
 
-	if(_auto) {
+	if(_autoOn) {
 		if(noise) {
 			_currentElasticity -= _elasticitySpeed;
 			if(_currentElasticity < 0) {

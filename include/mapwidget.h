@@ -32,13 +32,14 @@
 #include "include/messageboard.h"
 #include "include/drawstate.h"
 #include "include/locationpointer.h"
+#include "include/mappointer.h"
 
 class TMapWidget : public QWidget
 {
 	Q_OBJECT
 
 	public:
-		TMapWidget(TDrawState *drawState, TLocationPointer *pointer, TTraceServer *traces, TButtonsBoard *buttons, TMessageBoard *messages, QWidget *parent = 0);
+		TMapWidget(TDrawState *drawState, TLocationPointer *locPointer, TMapPointer *mapPointer, TTraceServer *traces, TButtonsBoard *buttons, TMessageBoard *messages, QWidget *parent = 0);
 		
 	protected:
 		void resizeEvent (QResizeEvent *event);
@@ -49,7 +50,8 @@ class TMapWidget : public QWidget
 
 	private:
 		TDrawState *_drawState;
-		TLocationPointer *_pointer;
+		TLocationPointer *_locPointer;
+		TMapPointer *_mapPointer;
 		TTraceServer *_traces;
 		TButtonsBoard *_buttons;
 		TMessageBoard *_messages;

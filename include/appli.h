@@ -45,6 +45,8 @@
 #include "include/drawstate.h"
 #include "include/settings.h"
 #include "include/gpsstatistics.h"
+#include "include/locationpointer.h"
+#include "include/mappointer.h"
 
 class TGpsAppli : public QWidget
 {
@@ -77,7 +79,8 @@ class TGpsAppli : public QWidget
 		TTileServer _server;
 		TTileBatchLoader _batch;
 		TDrawState _drawState;
-		TLocationPointer _pointer;
+		TLocationPointer _locationPointer;
+		TMapPointer _mapPointer;
 		TActionsManager _actions;
 		TButtonsBoard _buttons;
 		TTraceServer _traces;

@@ -57,7 +57,8 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 	_server.configure(_settings, "tileserver", "caches");
 	_traces.configure(_settings, "traces");
 	_buttons.configure(_settings, "buttons");
-	_pointer.configure(_settings, "pointer");
+	_locationPointer.configure(_settings, "pointer");
+	_mapPointer.configure(_settings, "map");
 	_gpsData.configure(_settings, "gps");
 	_gpsStats.configure(_settings, "gps");
 
@@ -145,7 +146,7 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 	connect(&_traces, SIGNAL(signalTraceLoaded(int, int, int, int)), &_drawState, SLOT(slotCenterTo(int, int, int, int)));
 	connect(&TGlobal::messageBoard(), SIGNAL(signalRefresh()), &_drawState, SLOT(slotRefresh()));
 
-	_mapWidget = new TMapWidget(&_drawState, &_pointer, &_traces, &_buttons, &TGlobal::messageBoard(), this);
+	_mapWidget = new TMapWidget(&_drawState, &_locationPointer, &_mapPointer, &_traces, &_buttons, &TGlobal::messageBoard(), this);
 	connect(&_drawState, SIGNAL(signalUpdate()), _mapWidget, SLOT(update()));
 	_mapWidget->resize(this->size());
 	_mapWidget->show(); 
