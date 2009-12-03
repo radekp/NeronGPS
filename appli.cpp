@@ -41,6 +41,8 @@
 #include "include/appli.h"
 #include "include/power.h"
 #include "include/global.h"
+#include "include/keyboard.h"
+#include "include/converter.h"
 
 TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 {
@@ -56,11 +58,13 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 
 	_server.configure(_settings, "tileserver", "caches");
 	_traces.configure(_settings, "traces");
+	_poi.configure(_settings, "poi");
 	_buttons.configure(_settings, "buttons");
 	_locationPointer.configure(_settings, "pointer");
 	_mapPointer.configure(_settings, "map");
 	_gpsData.configure(_settings, "gps");
 	_gpsStats.configure(_settings, "gps");
+	_keyboard = TKeyboard::getKeyboards(_settings, "keyboard");
 
 	QMenu *contextMenu = QSoftMenuBar::menuFor(this);
 
@@ -79,6 +83,7 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 	actionsList.append("zoom/Zoom/main/1");
 	actionsList.append("magnification/Magnification/main/2");
 	actionsList.append("journey/Journey/main/3");
+	actionsList.append("poi/POI/main/4");
 	actionsList.append("traces/Traces/more/0");
 	actionsList.append("clock/Clock/more/1");
 	actionsList.append("cache/Cache/more/2");
@@ -110,6 +115,7 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 	_actions.connectTrigger("Server", this, SLOT(openServer()));
 	_actions.connectTrigger("Zoom", this, SLOT(openZoom()));
 	_actions.connectTrigger("Magnification", this, SLOT(openMagnification()));
+	_actions.connectTrigger("POI", this, SLOT(openPoi()));
 
 	connect(&_drawState, SIGNAL(signalActionState(const QString &, bool, bool)), &_actions, SLOT(slotChangeState(const QString &, bool, bool)));
 	connect(&_batch, SIGNAL(signalActionState(const QString &, bool, bool)), &_actions, SLOT(slotChangeState(const QString &, bool, bool)));
@@ -149,7 +155,7 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 	_mapWidget = new TMapWidget(&_drawState, &_locationPointer, &_mapPointer, &_traces, &_buttons, &TGlobal::messageBoard(), this);
 	connect(&_drawState, SIGNAL(signalUpdate()), _mapWidget, SLOT(update()));
 	_mapWidget->resize(this->size());
-	_mapWidget->show(); 
+	_mapWidget->show();
 }
 
 TGpsAppli::~TGpsAppli()
@@ -248,5 +254,21 @@ void TGpsAppli::openMagnification()
 
 	magnificationForm->setWindowState(Qt::WindowMaximized);
 	magnificationForm->show();
+}
+
+void TGpsAppli::openPoi()
+{
+	int x, y;
+	_drawState.getPosition(x, y);
+
+	TPoiForm *poiForm = new TPoiForm(_poi.poiList(), x, y, _keyboard);
+
+	connect(poiForm, SIGNAL(signalPoi(QString, QString)), &_poi, SLOT(slotRegisterPoi(QString, QString)));
+	connect(poiForm, SIGNAL(signalDeletePoi(QString)), &_poi, SLOT(slotDeletePoi(QString)));
+	connect(poiForm, SIGNAL(signalGoTo(int, int)), &_drawState, SLOT(slotGoTo(int, int)));
+	connect(poiForm, SIGNAL(signalDriveTo(int, int)), &_drawState, SLOT(slotDriveTo(int, int)));
+
+	poiForm->setWindowState(Qt::WindowMaximized);
+	poiForm->show();
 }
 

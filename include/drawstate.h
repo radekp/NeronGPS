@@ -53,16 +53,22 @@ class TDrawState : public QObject
 		int centerY() { return _centerY; }
 		int currentX() { return _currentX; }
 		int currentY() { return _currentY; }
+		int driveX() { return _driveX; }
+		int driveY() { return _driveY; }
 		qreal currentAngle() { return _currentAngle; }
 		bool validPos() { return _validPos; }
 		bool fix() { return _fix; }
 		bool moving() { return _moving; }
 		bool autoOn() { return _autoOn; }
+		bool driveOn() { return _driveOn; }
 		bool displayAlwaysOn() { return _displayAlwaysOn; }
 		const QString &httpServer() { return _httpName; }
+		void getPosition(int &x, int &y);
 
 		int locationX() { return TConverter::convert(_currentX, _zoom) + _width / 2 - TConverter::convert(_centerX, _zoom); }
 		int locationY() { return TConverter::convert(_currentY, _zoom) + _height / 2 - TConverter::convert(_centerY, _zoom); }
+		int driveLocationX() { return TConverter::convert(_driveX, _zoom) + _width / 2 - TConverter::convert(_centerX, _zoom); }
+		int driveLocationY() { return TConverter::convert(_driveY, _zoom) + _height / 2 - TConverter::convert(_centerY, _zoom); }
 
 		int translatX() { return _width / 2 - TConverter::convert(_centerX, _zoom); }
 		int translatY() { return _height / 2 - TConverter::convert(_centerY, _zoom); }
@@ -78,6 +84,8 @@ class TDrawState : public QObject
 		void slotSetMagnification(int magnification);
 		void slotCenterTo(int xmin, int xmax, int ymin, int ymax);
 		void slotMove(int offsetX, int offsetY);
+		void slotGoTo(int x, int y);
+		void slotDriveTo(int x, int y);
 		void slotAutoOn();
 		void slotAutoOff();
 		void slotTriggerBatchLoading();
@@ -106,10 +114,13 @@ class TDrawState : public QObject
 		int _centerY;
 		int _currentX;
 		int _currentY;
+		int _driveX;
+		int _driveY;
 		qreal _currentAngle;
 		bool _validPos;
 		bool _fix;
 		bool _autoOn;
+		bool _driveOn;
 		bool _moving;
 		bool _displayAlwaysOn;
 
@@ -121,7 +132,14 @@ class TDrawState : public QObject
 		int _elasticityLeftBorder;
 		float _currentElasticity;
 
+		int _centeringTopBorder;
+		int _centeringBottomBorder;
+		int _centeringRightBorder;
+		int _centeringLeftBorder;
+
 		void center();
+		bool centerDrive();
+		bool centerTo(int xmin, int xmax, int ymin, int ymax);
 		void reloadTiles();
 		void moveTiles();
 };

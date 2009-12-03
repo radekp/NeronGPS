@@ -34,6 +34,80 @@ TConverter::~TConverter()
 {
 }
 
+QString TConverter::longitudeToString(double lon)
+{
+	QString endString;
+
+	if(lon < 0) {
+		lon = -lon;
+		endString = QString(QLatin1Char(176)) + 'W';
+	} else {
+		endString = QString(QLatin1Char(176)) + 'E';
+	}
+
+	return QString("%1").arg(lon, 0, 'f', 10) + endString;
+}
+
+QString TConverter::latitudeToString(double lat)
+{
+	QString endString;
+
+	if(lat < 0) {
+		lat = -lat;
+		endString = QString(QLatin1Char(176)) + 'S';
+	} else {
+		endString = QString(QLatin1Char(176)) + 'N';
+	}
+
+	return QString("%1").arg(lat, 0, 'f', 10) + endString;
+}
+
+double TConverter::longitudeFromString(const QString &lon)
+{
+	double ret = 0;
+	QString tmp = lon;
+
+	tmp.remove(' ');
+
+	QStringList split = tmp.split(QLatin1Char(176));
+	if(split.size() == 2) {
+		ret = (double)split[0].toDouble();
+	
+		if(split[1] == "W") {
+			ret = -ret;
+		} else if(split[1] != "E") {
+			qDebug() << "Error, invalid longitude format, end character is not 'E' or 'W': " << lon;
+		}
+	} else {
+		qDebug() << "Error, invalid longitude format, no '°' found: " << lon;
+	}
+
+	return ret;
+}
+
+double TConverter::latitudeFromString(const QString &lat)
+{
+	double ret = 0;
+	QString tmp = lat;
+
+	tmp.remove(' ');
+
+	QStringList split = tmp.split(QLatin1Char(176));
+	if(split.size() == 2) {
+		ret = (double)split[0].toDouble();
+	
+		if(split[1] == "S") {
+			ret = -ret;
+		} else if(split[1] != "N") {
+			qDebug() << "Error, invalid longitude format, end character is not 'N' or 'S': " << lat;
+		}
+	} else {
+		qDebug() << "Error, invalid longitude format, no '°' found: " << lat;
+	}
+
+	return ret;
+}
+
 double TConverter::earthRadius(double lat)
 {
 	double a = 6378137.0;

@@ -18,39 +18,44 @@
  *
  */
 
-#ifndef LOCATIONPOINTER_H
-#define LOCATIONPOINTER_H
+#ifndef POISERVER_H
+#define POISERVER_H
 
 #include <QObject>
+#include <QStringList>
+#include <QMutex>
+#include <QFile>
 
-#include "include/drawstate.h"
-#include "include/painter.h"
+class TSettings;
 
-class TLocationPointer : public QObject
+class TPoiServer : public QObject
 {
 	Q_OBJECT
 	public:
-		TLocationPointer();
-		~TLocationPointer();
-		
+		TPoiServer();
+		~TPoiServer();
+
 		void configure(TSettings &settings, const QString &section);
-		void draw(QPainter &painter, TDrawState &drawState);
-		
+
+		const QStringList &poiList() { return _poiList; }
+
+	public slots:
+		void slotRegisterPoi(QString name, QString coordinates);
+		void slotDeletePoi(QString poi);
+
+	signals:
+		void signalPoiList(QStringList poiList);
+
 	private:
-		TPainter _locationPaint;
-		int _locationSize;
-		QColor _fixColor;
-		QColor _lostColor;
+		QMutex _mutex;
 
-		TPainter _drivePaint;
-		int _driveSize;
-		QColor _driveColor;
+		QString _poiDirName;
+		QString _poiFileName;
 
-		int _shadowLevel;
-		int _shadowX;
-		int _shadowY;
+		QFile *_poiFile;
+		QStringList _poiList;
 
-		void drawPointer(QPainter &painter, TPainter &paint, QColor &color, qreal angle, int x, int y, int posX, int posY, int size);
+		void writeFile();
 };
 
 #endif
