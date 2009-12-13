@@ -35,6 +35,7 @@
 #include "include/tilehttpwheel.h"
 #include "include/tilehttpname.h"
 #include "include/global.h"
+#include "include/gpsdata.h"
 
 TDrawState::TDrawState()
 {
@@ -45,13 +46,15 @@ TDrawState::TDrawState()
 	_zoom = 0;
 	_centerX = 0;
 	_centerY = 0;
-	_auto = true;
-	_validAngle = false;
+	_autoOn = true;
+	_driveOn = false;
 	_validPos = false;
 	_fix = false;
 	_moving = false;
 	_displayAlwaysOn = false;
 	_server = NULL;
+	_currentElasticity = 0;
+	_currentAngle = 0;
 
 	connect(&_map, SIGNAL(sendUpdate()), this, SLOT(slotRefresh()));
 }
@@ -73,6 +76,16 @@ void TDrawState::loadDefault(TSettings &settings, const QString &section)
 	_centerY = TConverter::prepareY(settings.getValue("defaultlatitude", 45.234444).toDouble());
 	_displayAlwaysOn = settings.getValue("displayalwayson", false).toBool();
 	QString httpName = settings.getValue("defaultserver", defaultServer).toString();
+	_elasticityStartZoom = settings.getValue("elasticitystartzoom", 12).toInt();
+	_elasticitySpeed = settings.getValue("elasticityspeed", 10).toInt();
+	_elasticityTopBorder = settings.getValue("elasticitytopborder", 130).toInt();
+	_elasticityBottomBorder = settings.getValue("elasticitybottomborder", 80).toInt();
+	_elasticityRightBorder = settings.getValue("elasticityrightborder", 80).toInt();
+	_elasticityLeftBorder = settings.getValue("elasticityleftborder", 80).toInt();
+	_centeringTopBorder = settings.getValue("centeringtopborder", 120).toInt();
+	_centeringBottomBorder = settings.getValue("centeringbottomborder", 50).toInt();
+	_centeringRightBorder = settings.getValue("centeringrightborder", 50).toInt();
+	_centeringLeftBorder = settings.getValue("centeringleftborder", 50).toInt();
 	settings.endGroup();
 
 	if(_displayAlwaysOn) {
@@ -109,31 +122,41 @@ void TDrawState::setSize(int width, int height)
 	reloadTiles();
 }
 
-void TDrawState::slotSetZoom(int zoom)
+void TDrawState::getPosition(int &x, int &y)
 {
-	_zoom = zoom;
-	reloadTiles();
-	emit signalUpdate();
-	tMessage((void *)this, 1000) << (_zoom - magnification());
+	if(_autoOn && _validPos) {
+		x = _currentX;
+		y = _currentY;
+	} else {
+		x = _centerX;
+		y = _centerY;
+	}
 }
 
-void TDrawState::slotZoomPlus()
+void TDrawState::slotSetZoom(int zoom)
 {
-	if(_zoom < NUMLEVELS) {
-		_zoom += 1;
+	if(zoom != _zoom) {
+		_zoom = zoom;
+		if(_autoOn && _validPos) {
+			center();
+		}
 		reloadTiles();
 		emit signalUpdate();
 		tMessage((void *)this, 1000) << (_zoom - magnification());
 	}
 }
 
+void TDrawState::slotZoomPlus()
+{
+	if(_zoom < NUMLEVELS) {
+		slotSetZoom(_zoom + 1);
+	}
+}
+
 void TDrawState::slotZoomMinus()
 {
 	if(_zoom > 0) {
-		_zoom -= 1;
-		reloadTiles();
-		emit signalUpdate();
-		tMessage((void *)this, 1000) << (_zoom - magnification());
+		slotSetZoom(_zoom - 1);
 	}
 }
 
@@ -160,26 +183,53 @@ void TDrawState::slotMove(int offsetX, int offsetY)
 	emit signalUpdate();
 }
 
+void TDrawState::slotGoTo(int x, int y)
+{
+	_centerX = x;
+	_centerY = y;
+
+	slotAutoOff();
+
+	moveTiles();
+	emit signalUpdate();
+}
+
+void TDrawState::slotDriveTo(int x, int y)
+{
+	_driveX = x;
+	_driveY = y;
+
+	_driveOn = true;
+
+	slotAutoOn();
+}
+
 void TDrawState::slotAutoOn()
 {
-	if(!_auto) {
-		_auto = true;
+	_autoOn = true;
 
-		if(_validPos) {
+	if(_validPos) {
+		if(_driveOn) {
+			if(centerDrive()) {
+				reloadTiles();
+			} else {
+				moveTiles();
+			}
+		} else {
 			_centerX = _currentX;
 			_centerY = _currentY;
 			moveTiles();
-			emit signalUpdate();
 		}
-
-		emit signalActionState("Auto center", false, false);
 	}
+
+	emit signalUpdate();
+	emit signalActionState("Auto center", false, false);
 }
 
 void TDrawState::slotAutoOff()
 {
-	if(_auto) {
-		_auto = false;
+	if(_autoOn) {
+		_autoOn = false;
 		emit signalActionState("Auto center", true, true);
 	}
 }
@@ -192,29 +242,39 @@ void TDrawState::slotGpsState(bool fix)
 	}
 }
 
-void TDrawState::slotGpsData(int x, int y, qreal angle, bool angleValid)
+void TDrawState::slotGpsData(bool noise, int x, int y, qreal angle)
 {
-	if(_auto && ((_currentX != x) || (_currentY != y))) {
-		_centerX = x;
-		_centerY = y;
-		moveTiles();
-	}
-
-	_currentX = x;
-	_currentY = y;
 	_validPos = true;
-	_validAngle = angleValid;
 	_currentAngle = angle;
 	_fix = true;
+	_currentX = x;
+	_currentY = y;
+
+	if(_autoOn && _driveOn) {
+		if(centerDrive()) {
+			reloadTiles();
+		} else {
+			moveTiles();
+		}
+	} else if(_autoOn) {
+		if(noise) {
+			_currentElasticity -= _elasticitySpeed;
+			if(_currentElasticity < 0) {
+				_currentElasticity = 0;
+			}
+		} else {
+			_currentElasticity += _elasticitySpeed;
+		}
+		center();
+		moveTiles();
+	}
 
 	emit signalUpdate();
 }
 
 void TDrawState::slotCenterTo(int xmin, int xmax, int ymin, int ymax)
 {
-	_centerX = (xmin + xmax) / 2;
-	_centerY = (ymin + ymax) / 2;
-	_zoom = TConverter::autoZoom(xmax - xmin, ymax - ymin, _width, _height);
+	centerTo(xmin, xmax, ymin, ymax);
 
 	reloadTiles();
 	emit signalUpdate();
@@ -278,5 +338,71 @@ void TDrawState::moveTiles()
 	if((!_moving) && (_server != NULL) && (_width != -1)) {
 		_map.moveTo(_centerX, _centerY);
 	}
+}
+
+void TDrawState::center()
+{
+	if(_zoom >= _elasticityStartZoom) {
+		qreal radian = (_currentAngle + 90) * M_PI / 180;
+
+		int offsetX = (int)(cos(radian) * _currentElasticity);
+		if(offsetX > (_width / 2) - _elasticityRightBorder) {
+			_currentElasticity = ((_width / 2) - _elasticityRightBorder) / cos(radian);
+		} else if (offsetX < - (_width / 2) + _elasticityLeftBorder) {
+			_currentElasticity = (- (_width / 2) + _elasticityLeftBorder) / cos(radian);
+		}
+			
+		int offsetY = (int)(sin(radian) * _currentElasticity);
+		if(offsetY > (_height / 2) - _elasticityBottomBorder) {
+			_currentElasticity = ((_height / 2) - _elasticityBottomBorder) / sin(radian);
+		} else if (offsetY < - (_height / 2) + _elasticityTopBorder) {
+			_currentElasticity = (- (_height / 2) + _elasticityTopBorder) / sin(radian);
+		}
+			
+		offsetX = (int)(cos(radian) * _currentElasticity);
+		offsetY = (int)(sin(radian) * _currentElasticity);
+
+		_centerX = _currentX - TConverter::convertBack(offsetX, _zoom); 
+		_centerY = _currentY - TConverter::convertBack(offsetY, _zoom); 
+	} else {
+		_centerX = _currentX;
+		_centerY = _currentY;
+	}
+}
+
+bool TDrawState::centerDrive()
+{
+	int xmin, xmax, ymin, ymax;
+
+	if(_driveX < _currentX) {
+		xmin = _driveX;
+		xmax = _currentX;
+	} else {
+		xmin = _currentX;
+		xmax = _driveX;
+	}
+
+	if(_driveY < _currentY) {
+		ymin = _driveY;
+		ymax = _currentY;
+	} else {
+		ymin = _currentY;
+		ymax = _driveY;
+	}
+
+	return centerTo(xmin, xmax, ymin, ymax);
+}
+
+bool TDrawState::centerTo(int xmin, int xmax, int ymin, int ymax)
+{
+	int oldZoom = _zoom;
+
+	_centerX = (xmin + xmax) / 2 - TConverter::convertBack((_centeringLeftBorder - _centeringRightBorder) / 2, _zoom);
+	_centerY = (ymin + ymax) / 2 - TConverter::convertBack((_centeringTopBorder - _centeringBottomBorder) / 2, _zoom);
+	_zoom = TConverter::autoZoom(xmax - xmin, ymax - ymin,
+		_width - _centeringRightBorder - _centeringLeftBorder,
+		_height - _centeringTopBorder - _centeringBottomBorder);
+
+	return (oldZoom != _zoom);
 }
 

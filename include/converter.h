@@ -45,6 +45,12 @@ class TConverter : public QObject
 		static int prepareY(double lat) {
 			return (int)((1 << NUMLEVELS) * (-atanh(sin(lat*M_PI/180)) * TILESIZE / (2*M_PI) + (TILESIZE/2)));
 		}
+		static double unprepareX(int x) { 
+			return (((double)(x) / (1 << NUMLEVELS)) - (TILESIZE / 2.)) * 360. / TILESIZE;
+		}
+		static double unprepareY(int y) {
+			return asin(-tanh((((double)(y) / (1 << NUMLEVELS)) - (TILESIZE/2.)) * (2.*M_PI) / TILESIZE)) * 180. / M_PI;
+		}
 		static int convert(int value, int zoom) {
 			return value >> (NUMLEVELS - zoom);
 		}
@@ -57,6 +63,10 @@ class TConverter : public QObject
 			return (NUMLEVELS - i);
 		}
 
+		static QString longitudeToString(double lon);
+		static QString latitudeToString(double lat);
+		static double longitudeFromString(const QString &lon);
+		static double latitudeFromString(const QString &lat);
 		static double earthRadius(double lat);
 		static float distance(double lat1, double lon1, double lat2, double lon2, double altitude);
 

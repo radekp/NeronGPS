@@ -18,57 +18,28 @@
  *
  */
 
-#ifndef GPSSTATISTICS_H
-#define GPSSTATISTICS_H
+#ifndef MAPPOINTER_H
+#define MAPPOINTER_H
 
 #include <QObject>
-#include <QWhereaboutsUpdate>
-#include <QQueue>
-#include <QMutex>
 
-#include "include/settings.h"
+#include "include/drawstate.h"
+#include "include/painter.h"
 
-#define STAT_INVALID_SPEED	(-100000)
-#define STAT_INVALID_ALTITUDE	(-100000)
-
-class TGpsStatistics : public QObject
+class TMapPointer : public QObject
 {
 	Q_OBJECT
 	public:
-		TGpsStatistics();
-		~TGpsStatistics();
-
+		TMapPointer();
+		~TMapPointer();
+		
 		void configure(TSettings &settings, const QString &section);
-		void resend();
-
-	public slots:
-		void slotGpsData(const QWhereaboutsUpdate &update);
-		void slotReset();
-
-	signals:
-		void signalStatistics(int time, int distance, float speed, int altitude, int altMin, int altMax, int fix);
-
+		void draw(QPainter &painter, TDrawState &drawState);
+		
 	private:
-		QMutex _mutex;
-
-		int _accuracy;
-		uint _lostTime;
-
-		bool _first;
-		uint _beginning;
-
-		double _lastLat;
-		double _lastLon;
-		uint _lastSampleTime;
-		uint _lastTime;
-
-		float _distance;
-		float _speed;
-		float _altitude;
-		float _altMin;
-		float _altMax;
-
-		uint _fixLost;
+		TPainter _painter;
+		int _width;
+		int _height;
 };
 
 #endif

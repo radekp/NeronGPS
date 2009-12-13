@@ -32,6 +32,7 @@
 #include "include/serverform.h"
 #include "include/zoomform.h"
 #include "include/magnificateform.h"
+#include "include/poiform.h"
 #include "include/tileserver.h"
 #include "include/tilebatchloader.h"
 #include "include/mapwidget.h"
@@ -39,12 +40,15 @@
 #include "include/gpsdata.h"
 #include "include/gpsclock.h"
 #include "include/traceserver.h"
+#include "include/poiserver.h"
 #include "include/actionsmanager.h"
 #include "include/buttonsboard.h"
 #include "include/messageboard.h"
 #include "include/drawstate.h"
 #include "include/settings.h"
 #include "include/gpsstatistics.h"
+#include "include/locationpointer.h"
+#include "include/mappointer.h"
 
 class TGpsAppli : public QWidget
 {
@@ -63,9 +67,11 @@ class TGpsAppli : public QWidget
 		void openServer();
 		void openZoom();
 		void openMagnification();
+		void openPoi();
 
 	private:
 		QMenu _others;
+		QStringList _keyboard;
 
 		QWhereabouts *_location;
 		TGpsState _gpsState;
@@ -77,10 +83,12 @@ class TGpsAppli : public QWidget
 		TTileServer _server;
 		TTileBatchLoader _batch;
 		TDrawState _drawState;
-		TLocationPointer _pointer;
+		TLocationPointer _locationPointer;
+		TMapPointer _mapPointer;
 		TActionsManager _actions;
 		TButtonsBoard _buttons;
 		TTraceServer _traces;
+		TPoiServer _poi;
 
 		TMapWidget *_mapWidget;
 };

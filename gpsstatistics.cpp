@@ -26,11 +26,24 @@
 
 TGpsStatistics::TGpsStatistics()
 {
+	_accuracy = 5;
+	_lostTime = 20;
+
 	slotReset();
 }
 
 TGpsStatistics::~TGpsStatistics()
 {
+}
+
+void TGpsStatistics::configure(TSettings &settings, const QString &section)
+{
+	settings.beginGroup(section);
+
+	_accuracy = settings.getValue("accuracyfordistance", 5).toInt();
+	_lostTime = settings.getValue("timebeforelost", 20).toInt();
+
+	settings.endGroup();
 }
 
 void TGpsStatistics::slotGpsData(const QWhereaboutsUpdate &update)
@@ -67,14 +80,14 @@ void TGpsStatistics::slotGpsData(const QWhereaboutsUpdate &update)
 		float altitude = (_altitude == STAT_INVALID_ALTITUDE) ? 0 : _altitude;
 		float dist = TConverter::distance(_lastLat, _lastLon, update.coordinate().latitude(), update.coordinate().longitude(), altitude);
 
-		if(dist > 5) {
+		if(dist > _accuracy) {
 			_distance += dist;
 			_lastLat = update.coordinate().latitude();
 			_lastLon = update.coordinate().longitude();
 			_lastSampleTime = newTime;
 		}
 
-		if((newTime - _lastTime) > 20) {
+		if((newTime - _lastTime) > _lostTime) {
 			uint lostTime = newTime - _lastTime;
 			_fixLost += lostTime;
 		}

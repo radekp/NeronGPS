@@ -18,39 +18,38 @@
  *
  */
 
-#ifndef LOCATIONPOINTER_H
-#define LOCATIONPOINTER_H
+#ifndef POIFORM_H
+#define POIFORM_H
 
-#include <QObject>
+#include "ui_poiform.h"
 
-#include "include/drawstate.h"
-#include "include/painter.h"
-
-class TLocationPointer : public QObject
+class TPoiForm : public QWidget
 {
 	Q_OBJECT
+
 	public:
-		TLocationPointer();
-		~TLocationPointer();
+		TPoiForm(const QStringList &poiList, int x, int y, const QStringList &keyboard, QWidget *parent = 0, Qt::WFlags f = 0);
+		~TPoiForm();
 		
-		void configure(TSettings &settings, const QString &section);
-		void draw(QPainter &painter, TDrawState &drawState);
-		
+	public slots:
+		void slotAdd(bool checked);
+		void slotDelete(bool checked);
+		void slotGoTo(bool checked);
+		void slotDriveTo(bool checked);
+		void slotPoiName(QString name);
+		void slotItemClicked(QListWidgetItem *item);
+		void slotKill();
+
+	signals:
+		void signalPoi(QString name, QString coordinates);
+		void signalDeletePoi(QString poi);
+		void signalGoTo(int x, int y);
+		void signalDriveTo(int x, int y);
+
 	private:
-		TPainter _locationPaint;
-		int _locationSize;
-		QColor _fixColor;
-		QColor _lostColor;
+		Ui::PoiForm ui;
 
-		TPainter _drivePaint;
-		int _driveSize;
-		QColor _driveColor;
-
-		int _shadowLevel;
-		int _shadowX;
-		int _shadowY;
-
-		void drawPointer(QPainter &painter, TPainter &paint, QColor &color, qreal angle, int x, int y, int posX, int posY, int size);
+		QStringList _keyboard;
 };
 
 #endif

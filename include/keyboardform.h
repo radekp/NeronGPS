@@ -18,40 +18,38 @@
  *
  */
 
-#ifndef LOCATIONPOINTER_H
-#define LOCATIONPOINTER_H
+#ifndef KEYBOARDFORM_H
+#define KEYBOARDFORM_H
 
-#include <QObject>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QPushButton>
+#include <QList>
 
-#include "include/drawstate.h"
-#include "include/painter.h"
+#include "ui_keyboardform.h"
 
-class TLocationPointer : public QObject
+#include "keyboard.h"
+
+class TKeyboardForm : public QWidget
 {
 	Q_OBJECT
+
 	public:
-		TLocationPointer();
-		~TLocationPointer();
+		TKeyboardForm(const QStringList &keyboards, const QString &validateText, QWidget *parent = 0, Qt::WFlags f = 0);
+		~TKeyboardForm();
 		
-		void configure(TSettings &settings, const QString &section);
-		void draw(QPainter &painter, TDrawState &drawState);
-		
+	public slots:
+		void slotKey(QString key);
+		void slotValidate(bool checked);
+		void slotKill();
+
+	signals:
+		void signalText(QString text);
+
 	private:
-		TPainter _locationPaint;
-		int _locationSize;
-		QColor _fixColor;
-		QColor _lostColor;
+		Ui::KeyboardForm ui;
 
-		TPainter _drivePaint;
-		int _driveSize;
-		QColor _driveColor;
-
-		int _shadowLevel;
-		int _shadowX;
-		int _shadowY;
-
-		void drawPointer(QPainter &painter, TPainter &paint, QColor &color, qreal angle, int x, int y, int posX, int posY, int size);
+		TKeyboard _keyboard;
 };
 
 #endif
-

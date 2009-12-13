@@ -31,99 +31,101 @@ TGpsData::TGpsData()
 {
 	_lastValid = false;
 	_lastSkipped = false;
-	_lastCourseValid = false;
+	_lastCourse = 0;
+	_altitude = 0;
+	_accuracy = 5;
+	_rotationSpeed = 20;
 }
 
 TGpsData::~TGpsData()
 {
 }
 
+void TGpsData::configure(TSettings &settings, const QString &section)
+{
+	settings.beginGroup(section);
+
+	_accuracy = settings.getValue("accuracyforcourse", 5).toInt();
+	_rotationSpeed = settings.getValue("rotationspeed", 20).toInt();
+
+	settings.endGroup();
+}
+
 void TGpsData::slotGpsData(const QWhereaboutsUpdate &update)
 {
-	qreal course = 0;
-	bool courseValid = false;
-
 	int newX = TConverter::prepareX(update.coordinate().longitude());
 	int newY = TConverter::prepareY(update.coordinate().latitude());
 
 	if(_lastValid && !_lastSkipped && (newX == _lastX) && (newX == _lastX)) {
 		_lastSkipped = true;
 		return;
+	} else {
+		_lastSkipped = false;
+	}
+	
+	qreal course = 0;
+	bool courseValid = false;
+
+	if(update.coordinate().type() == QWhereaboutsCoordinate::Coordinate3D) {
+		_altitude = update.coordinate().altitude();
 	}
 
-	_lastSkipped = false;
-	
+	bool noise = true;
+	if(_lastValid) {
+		float dist = TConverter::distance(_lastLat, _lastLon, update.coordinate().latitude(), update.coordinate().longitude(), _altitude);
+		if(dist > _accuracy) {
+			int xOffset = newX - _lastX;
+			int yOffset = newY - _lastY;
+
+			float distance = sqrt(xOffset * xOffset + yOffset * yOffset);
+
+			if(distance != 0) {
+				course = acos(xOffset / distance);
+				course *= 180 / M_PI;
+				if(yOffset < 0) {
+					course = 360 - course;
+				}
+
+				course += 90;
+			}
+
+			_lastLat = update.coordinate().latitude();
+			_lastLon = update.coordinate().longitude();
+			_lastX = newX;
+			_lastY = newY;
+			noise = false;
+			courseValid = true;
+		}
+	} else {
+		_lastLat = update.coordinate().latitude();
+		_lastLon = update.coordinate().longitude();
+		_lastX = newX;
+		_lastY = newY;
+		_lastValid = true;
+	}
+
 	if(update.dataValidityFlags() & QWhereaboutsUpdate::Course) {
 		course = update.course();
 		courseValid = true;
-	} else if(_lastValid) {
-		int xOffset, yOffset;
-		float distance;
-		
-		xOffset = newX - _lastX;
-		yOffset = newY - _lastY;
-
-		distance = sqrt(xOffset * xOffset + yOffset * yOffset);
-
-		if(distance != 0) {
-			course = acos(xOffset / distance);
-			course *= 180 / M_PI;
-			if(yOffset < 0) {
-				course = 360 - course;
-			}
-
-			course += 90;
-			courseValid = true;
-		}
 	}
 
 	if(courseValid)	{
-		while(course >= 360) {
-			course -= 360;
-		}
+		while(course >= 360) { course -= 360; }
+		while(course < 0) { course += 360; }
 
-		while(course < 0) {
-			course += 360;
-		}
+		qreal diff = course - _lastCourse;
+		if(diff > 180) { diff = diff - 360; }
+		if(diff < -180) { diff = diff + 360; }
+		if(diff > _rotationSpeed) { diff = _rotationSpeed; }
+		if(diff < -_rotationSpeed) { diff = -_rotationSpeed; }
 
-		if(_lastCourseValid) {
-			qreal diff = course - _lastCourse;
-
-			if(diff > 180) {
-				diff = diff - 360;
-			}
-
-			if(diff < -180) {
-				diff = diff + 360;
-			}
-
-			if(diff > 20) {
-				diff = 20;
-			}
-
-			if(diff < -20) {
-				diff = -20;
-			}
-
-			course = _lastCourse + diff;
-		}
+		course = _lastCourse + diff;
 	} else {
-		if(_lastCourseValid) {
-			course = _lastCourse;
-			courseValid = true;
-		}
+		course = _lastCourse;
 	}
 
-	if(courseValid)	{
-		emit signalGpsData(newX, newY, course, true);
-	} else {
-		emit signalGpsData(newX, newY, 0, false);
-	}
+	emit signalGpsData(noise, newX, newY, course);
 
-	_lastX = newX;
-	_lastY = newY;
 	_lastCourse = course;
-	_lastCourseValid = courseValid;
-	_lastValid = true;
 }
 

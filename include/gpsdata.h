@@ -24,6 +24,8 @@
 #include <QWhereabouts>
 #include <QWhereaboutsUpdate>
 
+#include "include/settings.h"
+
 class TGpsData : public QObject
 {
 	Q_OBJECT
@@ -31,20 +33,26 @@ class TGpsData : public QObject
 		TGpsData();
 		~TGpsData();
 
+		void configure(TSettings &settings, const QString &section);
+
 	public slots:
 		void slotGpsData(const QWhereaboutsUpdate &update);
 
 	signals:
-		void signalGpsData(int x, int y, qreal angle, bool angleValid);
+		void signalGpsData(bool noise, int x, int y, qreal angle);
 
 	private:
+		int _accuracy;
+		int _rotationSpeed;
+
+		float _altitude;
 		bool _lastValid;
 		bool _lastSkipped;
 		int _lastX;
 		int _lastY;
-
-		bool _lastCourseValid;
 		qreal _lastCourse;
+		double _lastLat;
+		double _lastLon;
 };
 
 #endif
