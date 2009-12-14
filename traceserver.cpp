@@ -65,7 +65,7 @@ void TTraceServer::configure(TSettings &settings, const QString &section)
 	settings.endGroup();
 
 	if(record) {
-		QMessageBox dialog(QMessageBox::Warning, "Auto-recording enabled", "Start recording?", QMessageBox::Yes | QMessageBox::No);
+		QMessageBox dialog(QMessageBox::Question, "Auto-recording enabled", "Start recording?", QMessageBox::Yes | QMessageBox::No);
 		if(dialog.exec() == QMessageBox::Yes) {
 			_record.start();
 		}
