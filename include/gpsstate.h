@@ -35,10 +35,7 @@ class TGpsState : public QObject
 		TGpsState();
 		~TGpsState();
 
-		bool powerState() {return _power; };
-
 	public slots:
-		void slotPowerChange(bool power);
 		void slotGpsData(const QWhereaboutsUpdate &update);
 		void slotGpsState(QWhereabouts::State state);
 		void slotTimer();
@@ -54,7 +51,6 @@ class TGpsState : public QObject
 		QTimer _singleShot;
 		QTimer _timer;
 		QTime _time;
-		bool _power;
 
 		void goFix();
 		void goNoFix();

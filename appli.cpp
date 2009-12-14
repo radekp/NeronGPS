@@ -39,7 +39,6 @@
 #include <QtopiaServiceRequest>
 
 #include "include/appli.h"
-#include "include/power.h"
 #include "include/global.h"
 #include "include/keyboard.h"
 #include "include/converter.h"

@@ -23,7 +23,6 @@
 #include <QMessageBox>
 
 #include "include/gpsstate.h"
-#include "include/power.h"
 #include "include/global.h"
 
 TGpsState::TGpsState()
@@ -38,20 +37,10 @@ TGpsState::TGpsState()
 	_singleShot.setInterval(GPSSTATE_TIMEOUT * 1000);
 	_singleShot.setSingleShot(true);
 	connect(&_singleShot, SIGNAL(timeout()), this, SLOT(slotSingleShot()));
-
-	_power = true;
-	TPower::setGPS(_power);
 }
 
 TGpsState::~TGpsState()
 {
-}
-
-void TGpsState::slotPowerChange(bool power)
-{
-	_power = power;
-
-	TPower::setGPS(_power);
 }
 
 void TGpsState::slotTimer()
