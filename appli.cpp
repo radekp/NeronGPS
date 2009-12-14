@@ -164,6 +164,16 @@ TGpsAppli::~TGpsAppli()
 	qDebug("In ~TGpsAppli()");
 }
 
+void TGpsAppli::closeEvent(QCloseEvent *event)
+{
+	QMessageBox dialog(QMessageBox::Question, "Closing", "Exit?", QMessageBox::Yes | QMessageBox::No);
+	if(dialog.exec() == QMessageBox::Yes) {
+		event->accept();
+	} else {
+		event->ignore();
+	}
+}
+
 void TGpsAppli::openClock()
 {
 	TClockForm *clockForm = new TClockForm();

@@ -69,6 +69,9 @@ class TGpsAppli : public QWidget
 		void openMagnification();
 		void openPoi();
 
+	protected:
+		void closeEvent(QCloseEvent *);
+
 	private:
 		QMenu _others;
 		QStringList _keyboard;
