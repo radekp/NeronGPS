@@ -45,10 +45,14 @@
 #include "include/buttonsboard.h"
 #include "include/messageboard.h"
 #include "include/drawstate.h"
+#include "include/mapdrawlist.h"
 #include "include/settings.h"
 #include "include/gpsstatistics.h"
-#include "include/locationpointer.h"
-#include "include/mappointer.h"
+#include "include/mapcentering.h"
+#include "include/mapcross.h"
+#include "include/mapcursor.h"
+#include "include/maptarget.h"
+#include "include/tilemap.h"
 
 class TGpsAppli : public QWidget
 {
@@ -86,8 +90,13 @@ class TGpsAppli : public QWidget
 		TTileServer _server;
 		TTileBatchLoader _batch;
 		TDrawState _drawState;
-		TLocationPointer _locationPointer;
-		TMapPointer _mapPointer;
+
+		TMapDrawList _drawList;
+		TMapCentering _mapCentering;
+		TTileMap _map;
+		TMapCursor _mapCursor;
+		TMapTarget _mapTarget;
+		TMapCross _mapCross;
 		TActionsManager _actions;
 		TButtonsBoard _buttons;
 		TTraceServer _traces;

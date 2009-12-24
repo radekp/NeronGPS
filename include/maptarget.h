@@ -18,28 +18,34 @@
  *
  */
 
-#ifndef MAPPOINTER_H
-#define MAPPOINTER_H
+#ifndef MAPTARGET_H
+#define MAPTARGET_H
 
 #include <QObject>
 
 #include "include/drawstate.h"
 #include "include/painter.h"
+#include "include/mapdrawlist.h"
 
-class TMapPointer : public QObject
+class TMapTarget : public TMapDrawListElement
 {
 	Q_OBJECT
 	public:
-		TMapPointer();
-		~TMapPointer();
+		TMapTarget();
+		~TMapTarget();
 		
 		void configure(TSettings &settings, const QString &section);
 		void draw(QPainter &painter, TDrawState &drawState);
 		
 	private:
-		TPainter _painter;
-		int _width;
-		int _height;
+		TPainter _paint;
+		int _size;
+		QColor _onTrackColor;
+		QColor _outOfTrackColor;
+
+		int _shadowLevel;
+		int _shadowX;
+		int _shadowY;
 };
 
 #endif

@@ -28,24 +28,17 @@
 #include "include/tile.h"
 #include "include/converter.h"
 
-TMapWidget::TMapWidget(TDrawState *drawState, TLocationPointer *locPointer, TMapPointer *mapPointer, TTraceServer *traces, TButtonsBoard *buttons, TMessageBoard *messages, QWidget *parent) : QWidget(parent)
+TMapWidget::TMapWidget(TDrawState *drawState, TMapDrawList *drawList, TButtonsBoard *buttons, TMessageBoard *messages, QWidget *parent) : QWidget(parent)
 {
 	setBackgroundRole(QPalette::Base);
 	setAutoFillBackground(true);
 
 	_drawState = drawState;
-	_mapPointer = mapPointer;
-	_locPointer = locPointer;
-	_traces = traces;
+	_drawList = drawList;
 	_buttons = buttons;
 	_messages = messages;
 
 	update();
-}
-
-void TMapWidget::resizeEvent (QResizeEvent *event)
-{
-	_drawState->setSize(event->size().width(), event->size().height());
 }
 
 void TMapWidget::paintEvent(QPaintEvent *)
@@ -56,11 +49,8 @@ void TMapWidget::paintEvent(QPaintEvent *)
 		painter.setRenderHint(QPainter::Antialiasing);
 	}
 
-	_drawState->draw(painter);
-	_traces->draw(painter, *_drawState);
-	_mapPointer->draw(painter, *_drawState);
+	_drawList->draw(painter, width(), height());
 	_buttons->draw(painter, *_drawState);
-	_locPointer->draw(painter, *_drawState);
 	_messages->draw(painter, *_drawState);
 }
 

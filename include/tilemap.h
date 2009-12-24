@@ -32,10 +32,11 @@
 #include "include/tile.h"
 #include "include/tileclient.h"
 #include "include/tilel3cachemux.h"
+#include "include/mapdrawlist.h"
 
 class TDrawState;
 
-class TTileMap : public QObject
+class TTileMap : public TMapDrawListElement
 {
 	Q_OBJECT
 

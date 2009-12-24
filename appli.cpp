@@ -59,10 +59,13 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 	_traces.configure(_settings, "traces");
 	_poi.configure(_settings, "poi");
 	_buttons.configure(_settings, "buttons");
-	_locationPointer.configure(_settings, "pointer");
-	_mapPointer.configure(_settings, "map");
+	_mapCentering.configure(_settings, "automode");
+	_mapCross.configure(_settings, "map");
+	_mapCursor.configure(_settings, "cursor");
+	_mapTarget.configure(_settings, "target");
 	_gpsData.configure(_settings, "gps");
 	_gpsStats.configure(_settings, "gps");
+	_drawState.configure(_settings, "map");
 	_keyboard = TKeyboard::getKeyboards(_settings, "keyboard");
 
 	QMenu *contextMenu = QSoftMenuBar::menuFor(this);
@@ -83,6 +86,7 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 	actionsList.append("magnification/Magnification/main/2");
 	actionsList.append("journey/Journey/main/3");
 	actionsList.append("poi/POI/main/4");
+	actionsList.append("canceldriveto/Cancel drive to/main/5");
 	actionsList.append("traces/Traces/more/0");
 	actionsList.append("clock/Clock/more/1");
 	actionsList.append("cache/Cache/more/2");
@@ -101,10 +105,12 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 	_actions.connectChange("Start batch", &_drawState, SLOT(slotRefresh()));
 	_actions.connectTrigger("Stop batch", &_batch, SLOT(slotStopBatchLoading()));
 	_actions.connectChange("Stop batch", &_drawState, SLOT(slotRefresh()));
+	_actions.connectTrigger("Cancel drive to", &_drawState, SLOT(slotCancelDriveTo()));
 
 	_actions.slotChangeState("Auto center", false, false);
 	_actions.slotChangeState("Start batch", false, false);
 	_actions.slotChangeState("Stop batch", false, false);
+	_actions.slotChangeState("Cancel drive to", false, false);
 
 	_actions.connectTrigger("Clock", this, SLOT(openClock()));
 	_actions.connectTrigger("Cache", this, SLOT(openCache()));
@@ -119,8 +125,6 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 	connect(&_drawState, SIGNAL(signalActionState(const QString &, bool, bool)), &_actions, SLOT(slotChangeState(const QString &, bool, bool)));
 	connect(&_batch, SIGNAL(signalActionState(const QString &, bool, bool)), &_actions, SLOT(slotChangeState(const QString &, bool, bool)));
 
-	_drawState.loadDefault(_settings, "map");
-	_drawState.setTileServer(&_server);
 	_batch.setServer(&_server);
 	connect(&_drawState, SIGNAL(signalBatchLoading(int, int, int, int, int)), &_batch, SLOT(slotStartBatchLoading(int, int, int, int, int)));
 
@@ -151,7 +155,18 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 	connect(&_traces, SIGNAL(signalTraceLoaded(int, int, int, int)), &_drawState, SLOT(slotCenterTo(int, int, int, int)));
 	connect(&TGlobal::messageBoard(), SIGNAL(signalRefresh()), &_drawState, SLOT(slotRefresh()));
 
-	_mapWidget = new TMapWidget(&_drawState, &_locationPointer, &_mapPointer, &_traces, &_buttons, &TGlobal::messageBoard(), this);
+	_map.setServer(&_server);
+	connect(&_map, SIGNAL(sendUpdate()), &_drawState, SLOT(slotRefresh()));
+
+	_drawList.setDrawState(&_drawState);
+	_drawList += &_mapCentering;
+	_drawList += &_map;
+	_drawList += &_traces;
+	_drawList += &_mapCross;
+	_drawList += &_mapTarget;
+	_drawList += &_mapCursor;
+	_mapWidget = new TMapWidget(&_drawState, &_drawList, &_buttons, &TGlobal::messageBoard(), this);
+
 	connect(&_drawState, SIGNAL(signalUpdate()), _mapWidget, SLOT(update()));
 	_mapWidget->resize(this->size());
 	_mapWidget->show();
@@ -237,7 +252,7 @@ void TGpsAppli::openUserLog()
 
 void TGpsAppli::openServer()
 {
-	TServerForm *serverForm = new TServerForm(_server.getServerList(), _drawState.httpServer());
+	TServerForm *serverForm = new TServerForm(_server.getServerList(), _drawState.httpName());
 
 	connect(serverForm, SIGNAL(signalNewServer(const QString &)), &_drawState, SLOT(slotSwitchHttpServer(const QString &)));
 

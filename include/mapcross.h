@@ -18,42 +18,30 @@
  *
  */
 
-#ifndef MAPWIDGET_H
-#define MAPWIDGET_H
+#ifndef MAPPOINTER_H
+#define MAPPOINTER_H
 
 #include <QObject>
-#include <QWidget>
-#include <QList>
-#include <QWhereabouts>
-#include <QWhereaboutsUpdate>
 
-#include "include/traceserver.h"
-#include "include/buttonsboard.h"
-#include "include/messageboard.h"
-#include "include/drawstate.h"
 #include "include/mapdrawlist.h"
+#include "include/drawstate.h"
+#include "include/painter.h"
 
-class TMapWidget : public QWidget
+class TMapCross : public TMapDrawListElement
 {
 	Q_OBJECT
-
 	public:
-		TMapWidget(TDrawState *drawState, TMapDrawList *drawList, TButtonsBoard *buttons, TMessageBoard *messages, QWidget *parent = 0);
+		TMapCross();
+		~TMapCross();
 		
-	protected:
-		void paintEvent(QPaintEvent *event);
-		void mousePressEvent(QMouseEvent *event); 
-		void mouseMoveEvent(QMouseEvent *event);
-		void mouseReleaseEvent(QMouseEvent *event);
-
+		void configure(TSettings &settings, const QString &section);
+		void draw(QPainter &painter, TDrawState &drawState);
+		
 	private:
-		TDrawState *_drawState;
-		TMapDrawList *_drawList;
-		TButtonsBoard *_buttons;
-		TMessageBoard *_messages;
-
-		int _mouseX;
-		int _mouseY;
+		TPainter _painter;
+		int _width;
+		int _height;
 };
 
 #endif
+

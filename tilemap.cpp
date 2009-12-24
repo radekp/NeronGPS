@@ -64,6 +64,31 @@ void TTileMap::setServer(TTileServer *server)
 	_server = server;
 } 
 
+void TTileMap::draw(QPainter &painter, TDrawState &drawState)
+{
+	if(drawState.flag() & DRAWSTATE_FLAG_NEW_SIZE) {
+		setSurface(drawState.width() * 3, drawState.height() * 3, drawState.width(), drawState.height(), Qt::black);
+	}
+
+	if(drawState.moving()) {
+		flush();
+	} else {
+		if(drawState.flag() & (DRAWSTATE_FLAG_NEW_SIZE | DRAWSTATE_FLAG_NEW_ZOOM | DRAWSTATE_FLAG_NEW_MAGNIFICATION | DRAWSTATE_FLAG_NEW_SERVER)) {
+			loadTiles(drawState.httpName(), drawState.centerX(), drawState.centerY(), drawState.zoom(), drawState.magnification());
+		} else if(drawState.flag() & DRAWSTATE_FLAG_NEW_POSITION) {
+			moveTo(drawState.centerX(), drawState.centerY());
+		}
+	}
+
+	int x = (drawState.width() / 2) - (_pixmap->width() / 2);
+	x += TConverter::convert(_centerX, _zoom) - TConverter::convert(drawState.centerX(), _zoom);
+
+	int y = (drawState.height() / 2) - (_pixmap->height() / 2);
+	y += TConverter::convert(_centerY, _zoom) - TConverter::convert(drawState.centerY(), _zoom);
+
+	painter.drawPixmap(x, y, _pixmap->width(), _pixmap->height(), *_pixmap);
+}
+
 void TTileMap::setSurface(int width, int height, int hotWidth, int hotHeight, const QColor &background)
 {
 	_loader.flush(&_client);
@@ -151,15 +176,6 @@ void TTileMap::drawTile(TTile *tile)
 	if(_server != NULL) {
 		_server->releaseTile(tile, &_client);
 	}
-}
-
-void TTileMap::draw(QPainter &painter, TDrawState &drawState)
-{
-	int x = (drawState.width() / 2) - (_pixmap->width() / 2);
-	x += TConverter::convert(_centerX, _zoom) - TConverter::convert(drawState.centerX(), _zoom);
-	int y = (drawState.height() / 2) - (_pixmap->height() / 2);
-	y += TConverter::convert(_centerY, _zoom) - TConverter::convert(drawState.centerY(), _zoom);
-	painter.drawPixmap(x, y, _pixmap->width(), _pixmap->height(), *_pixmap);
 }
 
 void TTileMap::flush()

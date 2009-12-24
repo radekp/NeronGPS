@@ -18,39 +18,37 @@
  *
  */
 
-#ifndef MESSAGEBOARD_H
-#define MESSAGEBOARD_H
+#include <QtGlobal>
+#include <QtDebug>
 
-#include <QObject>
-#include <QPainter>
-#include <QFont>
-#include <QTime>
+#include "include/mapdrawlist.h"
 
-#include "include/drawstate.h"
-
-class TMessageBoard : public QObject
+TMapDrawList::TMapDrawList()
 {
-	Q_OBJECT
-	public:
-		TMessageBoard();
-		~TMessageBoard();
+	_drawState = NULL;
+}
 
-		void draw(QPainter &painter, TDrawState &drawState);
-		void message(const QString &message, void *sender, int timeout);
-		
-	public slots:
-		void slotTimer();
+TMapDrawList::~TMapDrawList()
+{
+}
 
-	signals:
-		void signalRefresh();
+void TMapDrawList::setDrawState(TDrawState *drawState)
+{
+	_drawState = drawState;
+}
 
-	private:
-		QMutex _mutex;
-		QFont _msgFont;
+void TMapDrawList::draw(QPainter &painter, int width, int height)
+{
+	if(_drawState != NULL) {
+		_drawState->setSize(width, height);
 
-		QStringList _messages;
-		QList<void *> _senders;
-		QList<QTime> _times;
-};
+		int i;
+		for(i = 0; i < size(); i++) {
+			at(i)->draw(painter, *_drawState);
+		}
 
-#endif
+		_drawState->clearFlag();
+	}
+}
+
+

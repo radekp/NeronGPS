@@ -18,42 +18,38 @@
  *
  */
 
-#ifndef MAPWIDGET_H
-#define MAPWIDGET_H
+#ifndef MAPCENTERING_H
+#define MAPCENTERING_H
 
-#include <QObject>
-#include <QWidget>
-#include <QList>
-#include <QWhereabouts>
-#include <QWhereaboutsUpdate>
-
-#include "include/traceserver.h"
-#include "include/buttonsboard.h"
-#include "include/messageboard.h"
-#include "include/drawstate.h"
 #include "include/mapdrawlist.h"
 
-class TMapWidget : public QWidget
-{
-	Q_OBJECT
+class TSettings;
+class TDrawState;
 
+class TMapCentering : public TMapDrawListElement
+{
 	public:
-		TMapWidget(TDrawState *drawState, TMapDrawList *drawList, TButtonsBoard *buttons, TMessageBoard *messages, QWidget *parent = 0);
-		
-	protected:
-		void paintEvent(QPaintEvent *event);
-		void mousePressEvent(QMouseEvent *event); 
-		void mouseMoveEvent(QMouseEvent *event);
-		void mouseReleaseEvent(QMouseEvent *event);
+		TMapCentering();
+		~TMapCentering();
+
+		void configure(TSettings &settings, const QString &section);
+		void draw(QPainter &painter, TDrawState &drawState);
 
 	private:
-		TDrawState *_drawState;
-		TMapDrawList *_drawList;
-		TButtonsBoard *_buttons;
-		TMessageBoard *_messages;
+		int _elasticityStartZoom;
+		int _elasticitySpeed;
+		int _elasticityTopBorder;
+		int _elasticityBottomBorder;
+		int _elasticityRightBorder;
+		int _elasticityLeftBorder;
+		float _currentElasticity;
 
-		int _mouseX;
-		int _mouseY;
+		int _zoomMax;
+
+		void center(TDrawState &draw);
+		void centerDrive(TDrawState &draw);
+		int getDriveZoom(TDrawState &draw);
 };
 
 #endif
+

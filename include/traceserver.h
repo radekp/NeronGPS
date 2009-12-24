@@ -30,8 +30,9 @@
 #include "include/trace.h"
 #include "include/tracerecorder.h"
 #include "include/drawstate.h"
+#include "include/mapdrawlist.h"
 
-class TTraceServer : public QObject
+class TTraceServer : public TMapDrawListElement
 {
 	Q_OBJECT
 	public:

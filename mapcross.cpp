@@ -24,17 +24,17 @@
 #include <QBrush>
 #include <QPainter>
 
-#include "include/mappointer.h"
+#include "include/mapcross.h"
 
-TMapPointer::TMapPointer()
+TMapCross::TMapCross()
 {
 }
 
-TMapPointer::~TMapPointer()
+TMapCross::~TMapCross()
 {
 }
 
-void TMapPointer::configure(TSettings &settings, const QString &section)
+void TMapCross::configure(TSettings &settings, const QString &section)
 {
 	settings.beginGroup(section);
 
@@ -47,7 +47,7 @@ void TMapPointer::configure(TSettings &settings, const QString &section)
 	_painter.configure(shape);
 }
 
-void TMapPointer::draw(QPainter &painter, TDrawState &drawState)
+void TMapCross::draw(QPainter &painter, TDrawState &drawState)
 {
 	if(!drawState.autoOn()) {
 		QPen pen;

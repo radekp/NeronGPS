@@ -18,39 +18,35 @@
  *
  */
 
-#ifndef LOCATIONPOINTER_H
-#define LOCATIONPOINTER_H
+#ifndef MAPDRAWLIST_H
+#define MAPDRAWLIST_H
 
 #include <QObject>
+#include <QList>
+#include <QPainter>
 
 #include "include/drawstate.h"
-#include "include/painter.h"
 
-class TLocationPointer : public QObject
+class TMapDrawListElement : public QObject
 {
 	Q_OBJECT
 	public:
-		TLocationPointer();
-		~TLocationPointer();
+		virtual ~TMapDrawListElement() {};
+		virtual void draw(QPainter &painter, TDrawState &drawState) = 0;
+};
+
+
+class TMapDrawList : public QList<TMapDrawListElement *>
+{
+	public:
+		TMapDrawList();
+		~TMapDrawList();
 		
-		void configure(TSettings &settings, const QString &section);
-		void draw(QPainter &painter, TDrawState &drawState);
-		
+		void setDrawState(TDrawState *drawState);
+		void draw(QPainter &painter, int width, int height); 
+
 	private:
-		TPainter _locationPaint;
-		int _locationSize;
-		QColor _fixColor;
-		QColor _lostColor;
-
-		TPainter _drivePaint;
-		int _driveSize;
-		QColor _driveColor;
-
-		int _shadowLevel;
-		int _shadowX;
-		int _shadowY;
-
-		void drawPointer(QPainter &painter, TPainter &paint, QColor &color, qreal angle, int x, int y, int posX, int posY, int size);
+		TDrawState *_drawState;
 };
 
 #endif

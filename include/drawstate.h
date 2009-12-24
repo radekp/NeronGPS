@@ -26,8 +26,18 @@
 
 #include "include/converter.h"
 #include "include/settings.h"
-#include "include/tilemap.h"
 #include "include/tileserver.h"
+
+#define DRAWSTATE_FLAG_NEW_SIZE			0x00000001
+#define DRAWSTATE_FLAG_NEW_ZOOM			0x00000002
+#define DRAWSTATE_FLAG_NEW_MAGNIFICATION	0x00000004
+#define DRAWSTATE_FLAG_NEW_POSITION		0x00000008
+#define DRAWSTATE_FLAG_NEW_SERVER		0x00000010
+#define DRAWSTATE_FLAG_AUTO_TURNED_ON		0x00000020
+#define DRAWSTATE_FLAG_AUTO_TURNED_OFF		0x00000040
+#define DRAWSTATE_FLAG_DRIVETO_TURNED_ON	0x00000080
+#define DRAWSTATE_FLAG_NEW_GPS_DATA		0x00000100
+#define DRAWSTATE_FLAG_NO_SIGNIFICANT_MOVE	0x00000200
 
 class TTrace;
 
@@ -38,12 +48,10 @@ class TDrawState : public QObject
 		TDrawState();
 		~TDrawState();
 
-		void loadDefault(TSettings &settings, const QString &section);
+		void configure(TSettings &settings, const QString &section);
 		void setSize(int width, int height);
-		void setTileServer(TTileServer *server);
 
-		void draw(QPainter &painter);
-
+		uint flag() { return _flag; }
 		int width() { return _width; }
 		int height() { return _height; }
 		int zoom() { return _zoom; }
@@ -61,8 +69,9 @@ class TDrawState : public QObject
 		bool moving() { return _moving; }
 		bool autoOn() { return _autoOn; }
 		bool driveOn() { return _driveOn; }
+		bool driveOnTrack() { return _driveOnTrack; }
 		bool displayAlwaysOn() { return _displayAlwaysOn; }
-		const QString &httpServer() { return _httpName; }
+		const QString &httpName() { return _httpName; }
 		void getPosition(int &x, int &y);
 
 		int locationX() { return TConverter::convert(_currentX, _zoom) + _width / 2 - TConverter::convert(_centerX, _zoom); }
@@ -75,6 +84,14 @@ class TDrawState : public QObject
 
 		int magnify(int val) { return val << magnification(); }
 
+		void setCenter(int x, int y);
+		void setZoom(int zoom);
+		void setDriveOnTrack(bool onTrack) { _driveOnTrack = onTrack; }
+		int getCenteringZoom(int xmin, int xmax, int ymin, int ymax);
+		void centerTo(int xmin, int xmax, int ymin, int ymax);
+
+		void clearFlag() { _flag = 0; }
+
 	public slots:
 		void slotGpsState(bool fix);
 		void slotGpsData(bool noise, int x, int y, qreal angle);
@@ -86,6 +103,7 @@ class TDrawState : public QObject
 		void slotMove(int offsetX, int offsetY);
 		void slotGoTo(int x, int y);
 		void slotDriveTo(int x, int y);
+		void slotCancelDriveTo();
 		void slotAutoOn();
 		void slotAutoOff();
 		void slotTriggerBatchLoading();
@@ -100,9 +118,13 @@ class TDrawState : public QObject
 		void signalBatchLoading(int x, int y, int w, int h, int zStart);
 
 	private:
-		TTileMap _map;
-		TTileServer *_server;
+		uint _flag;
 		QString _httpName;
+
+		int _centeringTopBorder;
+		int _centeringBottomBorder;
+		int _centeringRightBorder;
+		int _centeringLeftBorder;
 
 		QStringList _dontMagnificate;
 		int _width;
@@ -121,27 +143,9 @@ class TDrawState : public QObject
 		bool _fix;
 		bool _autoOn;
 		bool _driveOn;
+		bool _driveOnTrack;
 		bool _moving;
 		bool _displayAlwaysOn;
-
-		int _elasticityStartZoom;
-		int _elasticitySpeed;
-		int _elasticityTopBorder;
-		int _elasticityBottomBorder;
-		int _elasticityRightBorder;
-		int _elasticityLeftBorder;
-		float _currentElasticity;
-
-		int _centeringTopBorder;
-		int _centeringBottomBorder;
-		int _centeringRightBorder;
-		int _centeringLeftBorder;
-
-		void center();
-		bool centerDrive();
-		bool centerTo(int xmin, int xmax, int ymin, int ymax);
-		void reloadTiles();
-		void moveTiles();
 };
 
 #endif
