@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Thierry Vuillaume
+ * Copyright 2009, 2010 Thierry Vuillaume
  *
  * This file is part of NeronGPS.
  *
@@ -56,13 +56,16 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 	showMaximized();
 
 	_server.configure(_settings, "tileserver", "caches");
-	_traces.configure(_settings, "traces");
+	_mapTraces.configure(_settings, "traces");
+	_recorder.configure(_settings, "recorder");
+	_gpxLoader.configure(_settings, "traces");
 	_poi.configure(_settings, "poi");
 	_buttons.configure(_settings, "buttons");
 	_mapCentering.configure(_settings, "automode");
 	_mapCross.configure(_settings, "map");
 	_mapCursor.configure(_settings, "cursor");
 	_mapTarget.configure(_settings, "target");
+	_mapTrailer.configure(_settings, "trailer");
 	_gpsData.configure(_settings, "gps");
 	_gpsStats.configure(_settings, "gps");
 	_drawState.configure(_settings, "map");
@@ -114,7 +117,7 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 
 	_actions.connectTrigger("Clock", this, SLOT(openClock()));
 	_actions.connectTrigger("Cache", this, SLOT(openCache()));
-	_actions.connectTrigger("Traces", this, SLOT(openTrace()));
+	_actions.connectTrigger("Traces", this, SLOT(openGpx()));
 	_actions.connectTrigger("Journey", this, SLOT(openJourney()));
 	_actions.connectTrigger("User log", this, SLOT(openUserLog()));
 	_actions.connectTrigger("Server", this, SLOT(openServer()));
@@ -124,13 +127,14 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 
 	connect(&_drawState, SIGNAL(signalActionState(const QString &, bool, bool)), &_actions, SLOT(slotChangeState(const QString &, bool, bool)));
 	connect(&_batch, SIGNAL(signalActionState(const QString &, bool, bool)), &_actions, SLOT(slotChangeState(const QString &, bool, bool)));
+	connect(&_gpxLoader, SIGNAL(signalLoaded(QList<TTrace *> *)), &_mapTraces, SLOT(slotNewTraces(QList<TTrace *> *)));
 
 	_batch.setServer(&_server);
 	connect(&_drawState, SIGNAL(signalBatchLoading(int, int, int, int, int)), &_batch, SLOT(slotStartBatchLoading(int, int, int, int, int)));
 
 	_actions.connectToggle("Display Always On", _drawState.displayAlwaysOn(), &_drawState, SLOT(slotDisplayAlwaysOn(bool)));
-	_actions.connectToggle("Record", _traces.isRecording(), &_traces, SLOT(slotRecord(bool)));
-	_actions.connectToggle("Display trailer", true, &_traces, SLOT(slotDisplayTrailer(bool)));
+	_actions.connectToggle("Record", _recorder.isRecording(), &_recorder, SLOT(slotRecord(bool)));
+	_actions.connectToggle("Display trailer", true, &_mapTrailer, SLOT(slotEnable(bool)));
 
 /*
         QFile *sampleFile = new QFile("/home/root/nmea_sample.txt", this);
@@ -146,13 +150,15 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 	connect(_location, SIGNAL(updated(const QWhereaboutsUpdate &)), &_gpsState, SLOT(slotGpsData(const QWhereaboutsUpdate &)));
 	connect(_location, SIGNAL(updated(const QWhereaboutsUpdate &)), &_gpsData, SLOT(slotGpsData(const QWhereaboutsUpdate &)));
 	connect(_location, SIGNAL(updated(const QWhereaboutsUpdate &)), &_gpsClock, SLOT(slotGpsData(const QWhereaboutsUpdate &)));
-	connect(_location, SIGNAL(updated(const QWhereaboutsUpdate &)), &_traces, SLOT(slotGpsData(const QWhereaboutsUpdate &)));
+	connect(_location, SIGNAL(updated(const QWhereaboutsUpdate &)), &_mapTrailer, SLOT(slotGpsData(const QWhereaboutsUpdate &)));
+	connect(_location, SIGNAL(updated(const QWhereaboutsUpdate &)), &_recorder, SLOT(slotGpsData(const QWhereaboutsUpdate &)));
 	connect(_location, SIGNAL(updated(const QWhereaboutsUpdate &)), &_gpsStats, SLOT(slotGpsData(const QWhereaboutsUpdate &)));
 	connect(&_gpsState, SIGNAL(signalGpsState(bool)), &_drawState, SLOT(slotGpsState(bool)));
+	connect(&_gpsState, SIGNAL(signalGpsState(bool)), &_recorder, SLOT(slotGpsState(bool)));
 	connect(&_gpsData, SIGNAL(signalGpsData(bool, int, int, qreal)), &_drawState, SLOT(slotGpsData(bool, int, int, qreal)));
 	_location->startUpdates(1000); 
 
-	connect(&_traces, SIGNAL(signalTraceLoaded(int, int, int, int)), &_drawState, SLOT(slotCenterTo(int, int, int, int)));
+	connect(&_mapTraces, SIGNAL(signalTraceLoaded(int, int, int, int)), &_drawState, SLOT(slotCenterTo(int, int, int, int)));
 	connect(&TGlobal::messageBoard(), SIGNAL(signalRefresh()), &_drawState, SLOT(slotRefresh()));
 
 	_map.setServer(&_server);
@@ -161,7 +167,8 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 	_drawList.setDrawState(&_drawState);
 	_drawList += &_mapCentering;
 	_drawList += &_map;
-	_drawList += &_traces;
+	_drawList += &_mapTraces;
+	_drawList += &_mapTrailer;
 	_drawList += &_mapCross;
 	_drawList += &_mapTarget;
 	_drawList += &_mapCursor;
@@ -216,24 +223,26 @@ void TGpsAppli::openCache()
 	cacheForm->show();
 }
 
-void TGpsAppli::openTrace()
+void TGpsAppli::openGpx()
 {
-	TTraceForm *traceForm = new TTraceForm(_traces.getDir(), _traces.traceNames());
+	TGpxForm *gpxForm = new TGpxForm(_recorder.dir(), QStringList());
 
-	connect(traceForm, SIGNAL(signalLoad(QStringList)), &_traces, SLOT(slotLoadTraces(QStringList)));
+	connect(gpxForm, SIGNAL(signalGpx(QString, QColor)), &_gpxLoader, SLOT(slotLoad(QString, QColor)));
+	connect(gpxForm, SIGNAL(signalClear()), &_mapTraces, SLOT(slotClear()));
 
-	traceForm->setWindowState(Qt::WindowMaximized);
-	traceForm->show();
+	gpxForm->setWindowState(Qt::WindowMaximized);
+	gpxForm->show();
 }
 
 void TGpsAppli::openJourney()
 {
-	TJourneyForm *journeyForm = new TJourneyForm(_traces.recordSamples());
+	TJourneyForm *journeyForm = new TJourneyForm(_recorder.samples());
 
 	connect(&_gpsStats, SIGNAL(signalStatistics(int, int, float, int, int, int, int)), journeyForm, SLOT(slotNewStat(int, int, float, int, int, int, int)));
 	connect(journeyForm, SIGNAL(signalReset()), &_gpsStats, SLOT(slotReset()));
-	connect(journeyForm, SIGNAL(signalReset()), &_traces, SLOT(slotReset()));
-	connect(&_traces, SIGNAL(signalRecordInfo(QString, int)), journeyForm, SLOT(slotRecordInfo(QString, int)));
+	connect(journeyForm, SIGNAL(signalReset()), &_mapTrailer, SLOT(slotReset()));
+	connect(journeyForm, SIGNAL(signalReset()), &_recorder, SLOT(slotReset()));
+	connect(&_recorder, SIGNAL(signalRecordInfo(QString, int)), journeyForm, SLOT(slotRecordInfo(QString, int)));
 	connect(_location, SIGNAL(updated(const QWhereaboutsUpdate &)), journeyForm, SLOT(slotGpsData(const QWhereaboutsUpdate &)));
 
 	journeyForm->setWindowState(Qt::WindowMaximized);

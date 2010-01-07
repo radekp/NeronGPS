@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Thierry Vuillaume
+ * Copyright 2009, 2010 Thierry Vuillaume
  *
  * This file is part of NeronGPS.
  *
@@ -27,7 +27,6 @@
 #include <QWhereabouts>
 #include <QWhereaboutsUpdate>
 
-#include "include/traceserver.h"
 #include "include/buttonsboard.h"
 #include "include/messageboard.h"
 #include "include/drawstate.h"

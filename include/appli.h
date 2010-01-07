@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Thierry Vuillaume
+ * Copyright 2009, 2010 Thierry Vuillaume
  *
  * This file is part of NeronGPS.
  *
@@ -26,7 +26,7 @@
 
 #include "include/clockform.h"
 #include "include/cacheform.h"
-#include "include/traceform.h"
+#include "include/gpxform.h"
 #include "include/journeyform.h"
 #include "include/logform.h"
 #include "include/serverform.h"
@@ -39,7 +39,6 @@
 #include "include/gpsstate.h"
 #include "include/gpsdata.h"
 #include "include/gpsclock.h"
-#include "include/traceserver.h"
 #include "include/poiserver.h"
 #include "include/actionsmanager.h"
 #include "include/buttonsboard.h"
@@ -52,7 +51,11 @@
 #include "include/mapcross.h"
 #include "include/mapcursor.h"
 #include "include/maptarget.h"
+#include "include/maptraces.h"
+#include "include/maptrailer.h"
 #include "include/tilemap.h"
+#include "include/gpxloader.h"
+#include "include/tracerecorder.h"
 
 class TGpsAppli : public QWidget
 {
@@ -65,7 +68,7 @@ class TGpsAppli : public QWidget
 	public slots:
 		void openClock();
 		void openCache();
-		void openTrace();
+		void openGpx();
 		void openJourney();
 		void openUserLog();
 		void openServer();
@@ -97,10 +100,13 @@ class TGpsAppli : public QWidget
 		TMapCursor _mapCursor;
 		TMapTarget _mapTarget;
 		TMapCross _mapCross;
+		TMapTrailer _mapTrailer;
+		TMapTraces _mapTraces;
 		TActionsManager _actions;
 		TButtonsBoard _buttons;
-		TTraceServer _traces;
 		TPoiServer _poi;
+		TGpxLoader _gpxLoader;
+		TTraceRecorder _recorder;
 
 		TMapWidget *_mapWidget;
 };

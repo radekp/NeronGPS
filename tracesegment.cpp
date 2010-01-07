@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Thierry Vuillaume
+ * Copyright 2009, 2010 Thierry Vuillaume
  *
  * This file is part of NeronGPS.
  *
@@ -32,46 +32,6 @@ TTraceSegment::TTraceSegment()
 
 TTraceSegment::~TTraceSegment()
 {
-}
-
-void TTraceSegment::readBin(QFile &file)
-{
-	_size = file.read((char *)_data, SEGMENT_SIZE * sizeof(point)) / sizeof(point);
-	
-	if(_size < 0) {
-		_size = 0;
-		qDebug() << "Error reading segment";
-	} 
-
-	_xmin = _xmax = _data[0].x;
-	_ymin = _ymax = _data[0].y;
-
-	int i;
-	for(i = 1; i < _size; i++) {
-		if(_data[i].x < _xmin) { _xmin = _data[i].x; } else if(_data[i].x > _xmax) { _xmax = _data[i].x; }
-		if(_data[i].y < _ymin) { _ymin = _data[i].y; } else if(_data[i].y > _ymax) { _ymax = _data[i].y; }
-	}
-}
-
-void TTraceSegment::readSamples(QFile *file)
-{
-	QString str;
-
-	str = file->readLine(255);
-	_data[0].x = TConverter::prepareX(str.section(',', 1, 1).toDouble());
-	_data[0].y = TConverter::prepareY(str.section(',', 0, 0).toDouble());
-
-	_xmin = _xmax = _data[0].x;
-	_ymin = _ymax = _data[0].y;
-
-	for(_size = 1; (_size < SEGMENT_SIZE) && (!file->atEnd()); _size++) {
-		str = file->readLine(255);
-		_data[_size].x =  TConverter::prepareX(str.section(',', 1, 1).toDouble());
-		_data[_size].y = TConverter::prepareY(str.section(',', 0, 0).toDouble());
-		
-		if(_data[_size].x < _xmin) { _xmin = _data[_size].x; } else if(_data[_size].x > _xmax) { _xmax = _data[_size].x; }
-		if(_data[_size].y < _ymin) { _ymin = _data[_size].y; } else if(_data[_size].y > _ymax) { _ymax = _data[_size].y; }
-	}
 }
 
 void TTraceSegment::addSample(int x, int y)

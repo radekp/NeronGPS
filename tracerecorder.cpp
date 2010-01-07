@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Thierry Vuillaume
+ * Copyright 2009, 2010 Thierry Vuillaume
  *
  * This file is part of NeronGPS.
  *
@@ -26,26 +26,53 @@
 #include "include/converter.h"
 #include "include/directory.h"
 #include "include/global.h"
+#include "include/settings.h"
 
 TTraceRecorder::TTraceRecorder()
 {
 	_samples = -1;
 	_state = stopped;
-	_file = NULL;
-	_bin = NULL;
+	_gpx = NULL;
+	_onSeg = false;
 }
 
 TTraceRecorder::~TTraceRecorder()
 {
-	flush();
+	QMutexLocker locker(&_mutex);
+
+	close();
 }
 
-void TTraceRecorder::setDir(const QString &dir)
+void TTraceRecorder::configure(TSettings &settings, const QString &section)
 {
-	_dirName = dir;
+	settings.beginGroup(section);
+
+	_dir = settings.getValue("tracedir", "/media/card/NeronGPS/traces").toString();
+	bool record = settings.getValue("autorecord", "true").toBool();
+
+	settings.endGroup();
+
+	QDir::current().mkpath(_dir);
+
+	if(record) {
+		QMessageBox dialog(QMessageBox::Question, "Auto-recording enabled", "Start recording?", QMessageBox::Yes | QMessageBox::No);
+		if(dialog.exec() == QMessageBox::Yes) {
+			slotRecord(true);
+		}
+	}
 }
 
-void TTraceRecorder::newGpsData(const QWhereaboutsUpdate &update)
+void TTraceRecorder::slotGpsState(bool fix)
+{
+	QMutexLocker locker(&_mutex);
+
+	if(!fix && _onSeg) {
+		gpxEndSegment();
+		_onSeg = false;
+	}
+}
+
+void TTraceRecorder::slotGpsData(const QWhereaboutsUpdate &update)
 {
 	QMutexLocker locker(&_mutex);
 
@@ -55,14 +82,13 @@ void TTraceRecorder::newGpsData(const QWhereaboutsUpdate &update)
 			break;
 
 		case starting:
-			selectNextName(update.updateDate().toString("yyyyMMdd"));
-			createFile(update.updateTime().toString("hhmmss"));
+			createFile(update);
 			addSample(update);
 			_state = started;
 			break;
 
 		case reseting:
-			createFile(update.updateTime().toString("hhmmss"));
+			gpxNewTrack();
 			addSample(update);
 			_state = started;
 			break;
@@ -73,164 +99,184 @@ void TTraceRecorder::newGpsData(const QWhereaboutsUpdate &update)
 	}
 }
 
-void TTraceRecorder::start()
+void TTraceRecorder::slotRecord(bool record)
 {
 	QMutexLocker locker(&_mutex);
 
-	if(_state == stopped) {
-		_state = starting;
-		_samples = 0;
-		emit signalSample(_samples);
-	}
-}
-
-void TTraceRecorder::stop()
-{
-	QMutexLocker locker(&_mutex);
-
-	if(_state == started) {
-		tUserLog() << _filename << " ended";
-	}
+	if(record) {
+		if(_state == stopped) {
+			_state = starting;
+			_samples = 0;
+			emit signalRecordInfo("Wait for fix", 0);
+		}
+	} else {
+		if(_state == started) {
+			tUserLog() << _filename << " ended";
+		}
 	
-	_state = stopped;
-	_samples = -1;
+		_state = stopped;
+		_samples = -1;
 
-	flush();
+		close();
+
+		emit signalRecordInfo("-", 0);
+	}
 }
 
-void TTraceRecorder::reset()
+void TTraceRecorder::slotReset()
 {
 	QMutexLocker locker(&_mutex);
 
 	if(_state == started) {
 		_state = reseting;
 		_samples = 0;
-		emit signalSample(0);
+		emit signalRecordInfo(_filename, 0);
 	}
 }
 
-void TTraceRecorder::selectNextName(const QString &day)
+void TTraceRecorder::createFile(const QWhereaboutsUpdate &update)
 {
-	QString ret;
-	TDirectory dir;
+	close();
 
-	dir.setDir(_dirName);
-	QStringList files = dir.loadFiles(day + "_??_??????.*", true, true);
+	_filename = update.updateDate().toString("yyyyMMdd") + '_' + update.updateTime().toString("hhmmss");
+	_gpx = new QFile(_dir + '/' + _filename + ".gpx");
 
-	if(files.size() == 0) {
-		ret = "00";
-	} else {
-		int tmp = files[0].mid(9, 2).toInt() + 1;
-		ret = QString("%1").arg(tmp, (int)2, (int)10, QLatin1Char('0'));
-	}
+	if(_gpx->open(QIODevice::WriteOnly)) {
+		gpxHeader();
 
-	_shortName = day + '_' + ret + '_';
-}
-
-void TTraceRecorder::createFile(const QString &time)
-{
-	flush();
-
-	_filename = _shortName + time;
-	
-	QString fullName = _dirName + '/' + _filename ;
-	_file = new QFile(fullName + ".log");
-	_bin = new QFile(fullName + ".bin");
-
-	if(!_file->open(QIODevice::WriteOnly) || !_bin->open(QIODevice::WriteOnly)) {
-		qDebug() << "Error opening trace file: " << fullName;
-		delete _file;
-		_file = NULL;
-		delete _bin;
-		_bin = NULL;
-		emit signalSample(-1);
-	} else {
 		tUserLog() << _filename << " started";
-		emit signalSample(0);
+
+		emit signalRecordInfo(_filename, 0);
+	} else {
+		qDebug() << "Error opening trace file: " << _dir + '/' + _filename + ".gpx";
+
+		delete _gpx;
+		_gpx = NULL;
+
+		emit signalRecordInfo("Recording error", 0);
 	}
 }
 
 void TTraceRecorder::addSample(const QWhereaboutsUpdate &update)
 {
-	if(_file !=NULL) {
-		QDateTime time = update.updateDateTime();
-		QString str;
+	if(!_onSeg) {
+		gpxStartSegment();
+		_onSeg = true;
+	}
 
+	QString str;
 
-		str = QString("%1").arg(update.coordinate().latitude(), 0, 'f', 10);
-		str += ',';
+	str = QString("<trkpt lat=\"");
+	str += QString("%1").arg(update.coordinate().latitude(), 0, 'f', 10);
+	str += QString("\" lon=\"");
+	str += QString("%1").arg(update.coordinate().longitude(), 0, 'f', 10);
+	str += QString("\">\n");
 
-		str += QString("%1").arg(update.coordinate().longitude(), 0, 'f', 10);
-		str += ',';
+	if(update.coordinate().type() == QWhereaboutsCoordinate::Coordinate3D) {
+		str += QString("  <ele>");
+		str += QString::number(update.coordinate().altitude());
+		str += QString("</ele>\n");
+	}
 
-		if(update.coordinate().type() == QWhereaboutsCoordinate::Coordinate3D) {
-			str += QString::number(update.coordinate().altitude());
-		} else {
-			str += "0.0";
-		}
-		str += ',';
+	str += QString("  <time>");
+	str += update.updateDateTime().toString("yyyy-MM-ddThh:mm:ssZ");
+	str += QString("</time>\n");
 
-		if(update.dataValidityFlags() & QWhereaboutsUpdate::GroundSpeed) {
-			str += QString::number(update.groundSpeed() * 60 / 1000);
-		} else {
-			str += "0.0";
-		}
-		str += ',';
+	str += QString("</trkpt>\n");
 
-		if(update.dataValidityFlags() & QWhereaboutsUpdate::Course) {
-			str += QString::number(update.course());
-		} else {
-			str += "0.0";
-		}
-		str += ",1.0,"; /* unknown hdop */
-
-		str += time.toString("yyyy-MM-ddThh:mm:ssZ");
-		str += '\n';
-
-		_concatLog += str;
-
-		int tmp[2];
-		tmp[0] = TConverter::prepareX(update.coordinate().longitude());
-		tmp[1] = TConverter::prepareY(update.coordinate().latitude());
-
-		_concatBin += QByteArray((char *)tmp, 2 * sizeof(int));
-
-		_concatCount --;
-		if(_concatCount <= 0) {
-			_file->write(_concatLog.toAscii());
-			_concatLog.clear();
-			_bin->write(_concatBin);
-			_concatBin.clear();
-			_concatCount = TRACERECORDER_CONCATENATION;
-		}
-
+	if(_gpx != NULL) {
+		_gpx->write(str.toAscii());
 		_samples ++;
-		emit signalSample(_samples);
-	}	
+		emit signalRecordInfo(_filename, _samples);
+	}
 }
 
-void TTraceRecorder::flush()
+void TTraceRecorder::gpxHeader()
 {
-	if((_concatLog.size() > 0) && (_file != NULL)) {
-		_file->write(_concatLog.toAscii());
-	}
+	QString str;
 
-	if((_concatBin.size() > 0) && (_bin != NULL)) {
-		_bin->write(_concatBin);
-	}
+	str = QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 
-	if(_file != NULL) {
-		delete _file;
-		_file = NULL;
-	}
+	str += QString("<gpx\n");
+	str += QString("  version=\"1.1\"\n");
+	str += QString("  creator=\"NeronGPS\"\n");
+	str += QString("  xmlns=\"http://www.topografix.com/GPX/1/1\"\n");
+	str += QString("  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n");
+	str += QString("  xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd\">\n");
 
-	if(_bin != NULL) {
-		delete _bin;
-		_bin = NULL;
-	}
+	str += QString("<trk> <name>Transit</name>\n");
 
-	_concatLog.clear();
-	_concatBin.clear();
-	_concatCount = TRACERECORDER_CONCATENATION;
+	if(_gpx != NULL) {
+		_gpx->write(str.toAscii());
+	}
 }
+
+void TTraceRecorder::gpxFooter()
+{
+	QString str;
+
+	str += QString("</trk>\n");
+	str += QString("</gpx>\n");
+
+	if(_gpx != NULL) {
+		_gpx->write(str.toAscii());
+	}
+}
+
+void TTraceRecorder::gpxNewTrack()
+{
+	QString str;
+
+	if(_onSeg) {
+		str = QString("</trkseg>\n");
+		str += QString("</trk>\n");
+		str += QString("<trk> <name>Transit</name>\n");
+		str += QString("<trkseg>\n");
+	} else {
+		str = QString("</trk>\n");
+		str += QString("<trk> <name>Transit</name>\n");
+	}
+
+	if(_gpx != NULL) {
+		_gpx->write(str.toAscii());
+	}
+}
+
+void TTraceRecorder::gpxStartSegment()
+{
+	QString str;
+
+	str = QString("<trkseg>\n");
+
+	if(_gpx != NULL) {
+		_gpx->write(str.toAscii());
+	}
+}
+
+void TTraceRecorder::gpxEndSegment()
+{
+	QString str;
+
+	str = QString("</trkseg>\n");
+
+	if(_gpx != NULL) {
+		_gpx->write(str.toAscii());
+	}
+}
+
+void TTraceRecorder::close()
+{
+	if(_gpx != NULL) {
+		if(_onSeg) {
+			gpxEndSegment();
+			_onSeg = false;
+		}
+
+		gpxFooter();
+
+		delete _gpx;
+		_gpx = NULL;
+	}
+}
+
 

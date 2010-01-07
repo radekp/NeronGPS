@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Thierry Vuillaume
+ * Copyright 2009, 2010 Thierry Vuillaume
  *
  * This file is part of NeronGPS.
  *
@@ -25,7 +25,6 @@
 #include <QList>
 #include <QPainterPath>
 
-#include "include/traceloader.h"
 #include "include/tracesegment.h"
 #include "include/drawstate.h"
 
@@ -36,8 +35,6 @@ class TTrace : public QObject
 		TTrace();
 		~TTrace();
 
-		bool loadLog(const QString &filename);
-		bool loadBin(const QString &filename);
 		void setPen(const QPen &pen, int drawDistance);
 		int getNumberOfSamples();
 		void addSample(int x, int y);
@@ -51,23 +48,13 @@ class TTrace : public QObject
 		int ymin() { return _ymin; }
 		int ymax() { return _ymax; }
 
-	public slots:
-		void newSegment(TTraceSegment *seg);
-
-	signals:
-		void signalTraceLoading(TTrace *trace, int samples);
-		void signalTraceLoaded(TTrace *trace);
-
 	private:
 		QMutex _mutex;
 		int _xmin, _xmax, _ymin, _ymax;
 		QString _name;
 		QList<TTraceSegment *> _segments;
-		TTraceLoader _loader;
 		QPen _pen;
 		int _drawDistance;
-
-		void addSegment(TTraceSegment *seg);
 };
 
 #endif

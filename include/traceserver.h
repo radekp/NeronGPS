@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Thierry Vuillaume
+ * Copyright 2009, 2010 Thierry Vuillaume
  *
  * This file is part of NeronGPS.
  *
@@ -28,7 +28,6 @@
 #include <QWhereaboutsUpdate>
 
 #include "include/trace.h"
-#include "include/tracerecorder.h"
 #include "include/drawstate.h"
 #include "include/mapdrawlist.h"
 
@@ -42,33 +41,20 @@ class TTraceServer : public TMapDrawListElement
 		void configure(TSettings &settings, const QString &section);
 		void draw(QPainter &painter, TDrawState &drawState);
 
-		QString getDir() { return _traceDir; }
-		bool isRecording() { return _record.isRecording(); }
-		int recordSamples() { return _record.samples(); }
-		QStringList &traceNames() { return _traceNames; }
-	
 	public slots:
-		void slotLoadTraces(QStringList traceNames);
-		void slotTraceLoading(TTrace *trace, int samples);
-		void slotTraceLoaded(TTrace *trace);
+		void slotNewTraces(QList<TTrace *> *traces);
+		void slotClear();
 		void slotGpsData(const QWhereaboutsUpdate &update);
-		void slotRecord(bool record);
 		void slotDisplayTrailer(bool display);
-		void slotRecordSample(int samples);
 		void slotReset();
-		void slotCenterTraces();
 
 	signals:
 		void signalTraceLoaded(int xmin, int xmax, int ymin, int ymax);
-		void signalRecordInfo(QString name, int samples);
 
 	private:
 		QMutex _mutex;
 
-		TTraceRecorder _record;
-
 		QList<TTrace *> _traces;
-		QStringList _traceNames;
 
 		TTrace *_onGoing;
 
@@ -78,8 +64,6 @@ class TTraceServer : public TMapDrawListElement
 		int _traceTransparency;
 
 		bool _displayTrailer;
-
-		void loadTrace(QString traceName, QColor color);
 };
 
 #endif

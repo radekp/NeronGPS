@@ -18,44 +18,45 @@
  *
  */
 
-#ifndef TRACESEGMENT_H
-#define TRACESEGMENT_H
+#ifndef MAPTRACES_H
+#define MAPTRACES_H
 
 #include <QObject>
-#include <QFile>
-#include <QRect>
+#include <QList>
 #include <QPainterPath>
+#include <QMutex>
+#include <QWhereaboutsUpdate>
 
-#include "tracepainter.h"
+#include "include/trace.h"
+#include "include/drawstate.h"
+#include "include/mapdrawlist.h"
 
-#define SEGMENT_SIZE 256
-
-struct point {
-	int x;
-	int y;
-};
-
-class TTraceSegment : public QObject
+class TMapTraces : public TMapDrawListElement
 {
 	Q_OBJECT
 	public:
-		TTraceSegment();
-		~TTraceSegment();
+		TMapTraces();
+		~TMapTraces();
 
-		void addSample(int x, int y);
-		bool isFull();
-		void draw(TTracePainter *multi, int translatX, int translatY, int zoom);
-		void drawEndPoints(TTracePainter *multi, int translatX, int translatY, int zoom);
+		void configure(TSettings &settings, const QString &section);
+		void draw(QPainter &painter, TDrawState &drawState);
 
-		int size(void) { return _size; }
-		int xmin(void) { return _xmin; }
-		int xmax(void) { return _xmax; }
-		int ymin(void) { return _ymin; }
-		int ymax(void) { return _ymax; }
+	public slots:
+		void slotNewTraces(QList<TTrace *> *traces);
+		void slotClear();
+
+	signals:
+		void signalTraceLoaded(int xmin, int xmax, int ymin, int ymax);
 
 	private:
-		int _xmin, _xmax, _ymin, _ymax, _size;
-		point _data[SEGMENT_SIZE];
+		QMutex _mutex;
+
+		QList<TTrace *> _traces;
+
+		QString _traceDir;
+		QPen _tracePen;
+		int _tracePoint;
+		int _traceTransparency;
 };
 
 #endif

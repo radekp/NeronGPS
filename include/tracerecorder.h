@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Thierry Vuillaume
+ * Copyright 2009, 2010 Thierry Vuillaume
  *
  * This file is part of NeronGPS.
  *
@@ -26,7 +26,7 @@
 #include <QWhereaboutsUpdate>
 #include <QMutex>
 
-#define TRACERECORDER_CONCATENATION	32
+class TSettings;
 
 class TTraceRecorder : public QObject
 {
@@ -35,7 +35,9 @@ class TTraceRecorder : public QObject
 		TTraceRecorder();
 		~TTraceRecorder();
 
-		void setDir(const QString &dir);
+		void configure(TSettings &settings, const QString &section);
+
+		QString dir() { return _dir; }
 
 		bool isRecording() { return _state != stopped; }
 		const QString &filename() { return _filename; }
@@ -43,34 +45,36 @@ class TTraceRecorder : public QObject
 		int samples() { return _samples; }
 
 	public slots:
-		void newGpsData(const QWhereaboutsUpdate &update);
-		void start();
-		void stop();
-		void reset();
+		void slotGpsState(bool fix);
+		void slotGpsData(const QWhereaboutsUpdate &update);
+		void slotRecord(bool record);
+		void slotReset();
 
 	signals:
-		void signalSample(int samples);
+		void signalRecordInfo(QString name, int samples);
 
 	private:
 		QMutex _mutex;
 
 		enum {stopped, starting, reseting, started} _state;
-		QString _dirName;
-		QString _shortName;
+		QString _dir;
 		QString _filename;
-		QFile *_file;
 		QFile *_bin;
+		QFile *_gpx;
 		int _samples;
 		int _section;
+		bool _onSeg;
 
-		QString _concatLog;
-		QByteArray _concatBin;
-		int _concatCount;
-
-		void selectNextName(const QString &day);
-		void createFile(const QString &time);
+		void createFile(const QWhereaboutsUpdate &update);
 		void addSample(const QWhereaboutsUpdate &update);
-		void flush();	
+		void close();	
+
+		void gpxHeader();
+		void gpxFooter();
+		void gpxNewTrack();
+		void gpxStartSegment();
+		void gpxEndSegment();
+		void writeGpx(const QWhereaboutsUpdate &update);
 };
 
 #endif

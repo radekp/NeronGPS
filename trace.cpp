@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Thierry Vuillaume
+ * Copyright 2009, 2010 Thierry Vuillaume
  *
  * This file is part of NeronGPS.
  *
@@ -28,7 +28,6 @@
 
 TTrace::TTrace()
 {
-	connect(&_loader, SIGNAL(sendSegment(TTraceSegment *)), this, SLOT(newSegment(TTraceSegment *)), Qt::QueuedConnection);
 }
 
 TTrace::~TTrace()
@@ -36,62 +35,6 @@ TTrace::~TTrace()
 	while(_segments.size() > 0) {
 		delete _segments.takeFirst();
 	}
-}
-
-void TTrace::newSegment(TTraceSegment *seg)
-{
-	if(seg != NULL) {
-		addSegment(seg);
-		emit signalTraceLoading(this, _segments.size() * SEGMENT_SIZE);
-	} else {
-		emit signalTraceLoaded(this);
-	}
-}
-
-bool TTrace::loadLog(const QString &filename)
-{
-	bool success;
-
-	QMutexLocker locker(&_mutex);
-
-	while(_segments.size() > 0) {
-		delete _segments.takeFirst();
-	}
-
-	success = _loader.setFile(filename);
-	if (success) {
-		_name = filename.section('/', -1).section('.', 0);
-		_loader.start();
-	}
-	return success;
-}
-
-bool TTrace::loadBin(const QString &filename)
-{
-	_mutex.lock();
-
-	while(_segments.size() > 0) {
-		delete _segments.takeFirst();
-	}
-
-	_mutex.unlock();
-
-	QFile file(filename);
-
-	bool success = file.open(QIODevice::ReadOnly);
-	if (success) {
-		_name = filename.section('/', -1).section('.', 0, 0);
-		while(!file.atEnd()) {
-			TTraceSegment *seg = new TTraceSegment;
-			seg->readBin(file);
-			addSegment(seg);
-		}
-	} else {
-		qDebug() << "Error opening file: " << filename;	
-	}
-	
-	return success;
-	
 }
 
 void TTrace::setPen(const QPen &pen, int drawDistance)
@@ -124,23 +67,6 @@ void TTrace::addSample(int x, int y)
 	}
 
 	_segments.last()->addSample(x, y);
-}
-
-void TTrace::addSegment(TTraceSegment *seg)
-{
-	QMutexLocker locker(&_mutex);
-
-	_segments << seg;
-		
-	if(_segments.size() == 1) {
-		_xmin = seg->xmin();
-		_xmax = seg->xmax();
-		_ymin = seg->ymin();
-		_ymax = seg->ymax();
-	} else {
-		if(seg->xmin() < _xmin) { _xmin = seg->xmin(); } else if(seg->xmax() > _xmax) { _xmax = seg->xmax(); }
-		if(seg->ymin() < _ymin) { _ymin = seg->ymin(); } else if(seg->ymax() > _ymax) { _ymax = seg->ymax(); }
-	}
 }
 
 void TTrace::draw(QPainter &painter, TDrawState &drawState)

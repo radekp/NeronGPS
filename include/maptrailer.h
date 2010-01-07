@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Thierry Vuillaume
+ * Copyright 2009, 2010 Thierry Vuillaume
  *
  * This file is part of NeronGPS.
  *
@@ -18,29 +18,37 @@
  *
  */
 
-#ifndef TRACELOADER_H
-#define TRACELOADER_H
+#ifndef MAPTRAILER_H
+#define MAPTRAILER_H
 
 #include <QObject>
-#include <QThread>
-#include <QFile>
+#include <QList>
+#include <QPainterPath>
+#include <QMutex>
+#include <QWhereaboutsUpdate>
 
-#include "tracesegment.h"
+#include "include/trace.h"
+#include "include/drawstate.h"
+#include "include/mapdrawlist.h"
 
-class TTraceLoader : public QThread
+class TMapTrailer : public TMapDrawListElement
 {
 	Q_OBJECT
 	public:
-		TTraceLoader();
-		~TTraceLoader();
-		bool setFile(const QString &filename);
-		void run();
+		TMapTrailer();
+		~TMapTrailer();
 
-	signals:
-		void sendSegment(TTraceSegment *seg);
+		void configure(TSettings &settings, const QString &section);
+		void draw(QPainter &painter, TDrawState &drawState);
+
+	public slots:
+		void slotGpsData(const QWhereaboutsUpdate &update);
+		void slotEnable(bool enable);
+		void slotReset();
 
 	private:
-		QFile *_file;
+		TTrace _trailer;
+		bool _enable;
 };
 
 #endif

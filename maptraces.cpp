@@ -23,30 +23,23 @@
 #include <QMessageBox>
 #include <QDir>
 
-#include "include/traceserver.h"
+#include "include/maptraces.h"
 #include "include/converter.h"
 #include "include/global.h"
 
-TTraceServer::TTraceServer()
-{
-	_onGoing = new TTrace;
-	_displayTrailer = true;
-}
-
-TTraceServer::~TTraceServer()
+TMapTraces::TMapTraces()
 {
 }
 
-void TTraceServer::configure(TSettings &settings, const QString &section)
+TMapTraces::~TMapTraces()
+{
+}
+
+void TMapTraces::configure(TSettings &settings, const QString &section)
 {
 	QPen pen;
 
 	settings.beginGroup(section);
-
-	pen.setWidth(settings.getValue("trailthickness", 10).toInt());
-	pen.setCapStyle(Qt::RoundCap);
-	pen.setColor(settings.getColor("trailcolor", "008000c0"));
-	_onGoing->setPen(pen, settings.getValue("trailpoint", 200).toInt());
 
 	_tracePen.setWidth(settings.getValue("tracethickness", 10).toInt());
 	_tracePen.setCapStyle(Qt::RoundCap);
@@ -57,7 +50,7 @@ void TTraceServer::configure(TSettings &settings, const QString &section)
 	settings.endGroup();
 }
 
-void TTraceServer::slotNewTraces(QList<TTrace *> *traces)
+void TMapTraces::slotNewTraces(QList<TTrace *> *traces)
 {
 	if(traces->size() > 0) {
 		_mutex.lock();
@@ -83,7 +76,7 @@ void TTraceServer::slotNewTraces(QList<TTrace *> *traces)
 	delete traces;
 }
 
-void TTraceServer::slotClear()
+void TMapTraces::slotClear()
 {
 	QMutexLocker locker(&_mutex);
 
@@ -92,40 +85,15 @@ void TTraceServer::slotClear()
 	}
 }
 
-void TTraceServer::slotGpsData(const QWhereaboutsUpdate &update)
-{
-	int x = TConverter::prepareX(update.coordinate().longitude());
-	int y = TConverter::prepareY(update.coordinate().latitude());
-	
-	_onGoing->addSample(x, y);
-}
-
-void TTraceServer::draw(QPainter &painter, TDrawState &drawState)
+void TMapTraces::draw(QPainter &painter, TDrawState &drawState)
 {
 	if(!drawState.moving()) {
-		int i;
-
 		QMutexLocker locker(&_mutex);
 
-		if(_displayTrailer) {
-			_onGoing->draw(painter, drawState);
-		}
-
+		int i;
 		for(i = 0; i < _traces.size(); i++) {
 			_traces[i]->draw(painter, drawState);
 		}
 	}
 }
-
-void TTraceServer::slotDisplayTrailer(bool display)
-{
-	_displayTrailer = display;
-}
-
-void TTraceServer::slotReset()
-{
-	_onGoing->reset();
-}
-
-
 

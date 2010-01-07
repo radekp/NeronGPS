@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Thierry Vuillaume
+ * Copyright 2009, 2010 Thierry Vuillaume
  *
  * This file is part of NeronGPS.
  *
@@ -18,60 +18,51 @@
  *
  */
 
-#ifndef TRACEFORM_H
-#define TRACEFORM_H
-
-#include <QWhereabouts>
-#include <QWhereaboutsUpdate>
+#ifndef GPXFORM_H
+#define GPXFORM_H
 
 #include <QResizeEvent>
 #include <QComboBox>
 
-#include "ui_traceform.h"
+#include "ui_gpxform.h"
 #include "include/directory.h"
 
-class TTraceForm : public QWidget
+class TGpxForm : public QWidget
 {
 	Q_OBJECT
 
 	public:
-		TTraceForm(const QString &dir, const QStringList &loaded, QWidget *parent = 0, Qt::WFlags f = 0);
-		virtual ~TTraceForm();
+		TGpxForm(const QString &dir, const QStringList &loaded, QWidget *parent = 0, Qt::WFlags f = 0);
+		virtual ~TGpxForm();
 		
-	protected:
-		void resizeEvent (QResizeEvent *event);
-
 	public slots:
-		void slotList(int index);
-		void slotSetAll(int index);
-		void slotLoad(bool checked);
+		void slotColor1(bool checked);
+		void slotColor2(bool checked);
+		void slotColor3(bool checked);
+		void slotColor4(bool checked);
+		void slotColor5(bool checked);
+		void slotColor6(bool checked);
+		void slotColor7(bool checked);
+		void slotColor8(bool checked);
 		void slotClear(bool checked);
 		void slotDelete(bool checked);
 
 	signals:
-		void signalLoad(QStringList traceNames);
+		void signalGpx(QString gpx, QColor color);
+		void signalClear();
 
 	private:
-		Ui::TraceForm ui;
-		QComboBox *_setAll;
+		Ui::GpxForm ui;
 
-		QStringList _toBeLoaded;
+		QList<QColor> _colors;
 
-		QStringList _shortNames;
-		QStringList _traceNames;
-		TDirectory _traceDir;
+		TDirectory _gpxDir;
 		QString _dirName;
 
-		static const QStringList &monthsList();
-		QString expendDate(const QString &date);
-		QString expendTime(const QString &time);
-
-		void setup();
-		void comboToStringList();
-		void stringListToCombo();
-
+		void colorPressed(const QColor &color);
+		QString getFile();
+		void refresh();
 		QIcon colorIcon(const QColor &color, int w, int h);
-		QComboBox *colorCombo();
 };
 
 #endif
