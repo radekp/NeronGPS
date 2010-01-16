@@ -70,7 +70,7 @@ void TPoiForm::slotItemClicked(QListWidgetItem *item)
 
 void TPoiForm::slotAdd(bool /*checked*/)
 {
-	TKeyboardForm *keyboardForm = new TKeyboardForm(_keyboard, "Add");
+	TKeyboardForm *keyboardForm = new TKeyboardForm(_keyboard, "Save POI?");
 
 	connect(keyboardForm, SIGNAL(signalText(QString)), this, SLOT(slotPoiName(QString)));
 

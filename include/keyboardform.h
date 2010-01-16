@@ -35,21 +35,23 @@ class TKeyboardForm : public QWidget
 	Q_OBJECT
 
 	public:
-		TKeyboardForm(const QStringList &keyboards, const QString &validateText, QWidget *parent = 0, Qt::WFlags f = 0);
+		TKeyboardForm(const QStringList &keyboards, const QString &exitText, QWidget *parent = 0, Qt::WFlags f = 0);
 		~TKeyboardForm();
 		
 	public slots:
 		void slotKey(QString key);
-		void slotValidate(bool checked);
-		void slotKill();
 
 	signals:
 		void signalText(QString text);
+
+	protected:
+		void closeEvent(QCloseEvent *);
 
 	private:
 		Ui::KeyboardForm ui;
 
 		TKeyboard _keyboard;
+		QString _exitText;
 };
 
 #endif

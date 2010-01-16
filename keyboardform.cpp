@@ -21,17 +21,17 @@
 #include <QtGlobal>
 #include <QtDebug>
 #include <QTimer>
+#include <QMessageBox>
 
 #include "include/keyboardform.h"
 
-TKeyboardForm::TKeyboardForm(const QStringList &keyboards, const QString &validateText, QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
+TKeyboardForm::TKeyboardForm(const QStringList &keyboards, const QString &exitText, QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 {
 	ui.setupUi(this);
 
-	ui.validate->setText(validateText);
+	_exitText = exitText;
 
 	connect(&_keyboard, SIGNAL(signalKey(QString)), this, SLOT(slotKey(QString)));
-	connect(ui.validate, SIGNAL(clicked(bool)), this, SLOT(slotValidate(bool)));
 
 	_keyboard.attach(ui.frame, keyboards);
 }
@@ -39,6 +39,14 @@ TKeyboardForm::TKeyboardForm(const QStringList &keyboards, const QString &valida
 TKeyboardForm::~TKeyboardForm()
 {
 	_keyboard.detach();
+}
+
+void TKeyboardForm::closeEvent(QCloseEvent *event)
+{
+	QMessageBox dialog(QMessageBox::Question, "Closing", _exitText, QMessageBox::Yes | QMessageBox::No);
+	if(dialog.exec() == QMessageBox::Yes) {
+		emit signalText(ui.text->text());
+	}
 }
 
 void TKeyboardForm::slotKey(QString key)
@@ -50,17 +58,4 @@ void TKeyboardForm::slotKey(QString key)
 	}
 }
 
-void TKeyboardForm::slotValidate(bool /*checked*/)
-{
-	hide();
-
-	emit signalText(ui.text->text());
-
-	QTimer::singleShot(1, this, SLOT(slotKill()));
-}
-
-void TKeyboardForm::slotKill()
-{
-	delete this;
-}
 
