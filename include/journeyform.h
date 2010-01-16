@@ -31,20 +31,28 @@ class TJourneyForm : public QWidget
 	Q_OBJECT
 
 	public:
-		TJourneyForm(int samples, QWidget *parent = 0, Qt::WFlags f = 0);
+		TJourneyForm(int samples, const QStringList &keyboard, QWidget *parent = 0, Qt::WFlags f = 0);
 		virtual ~TJourneyForm();
 		
 	public slots:
 		void slotRecordInfo(QString name, int samples);
-		void slotReset(bool checked);
+		void slotNewTrack(bool checked);
+		void slotEndTrack(bool checked);
+		void slotWayPoint(bool checked);
+		void slotTrackName(QString name);
+		void slotPointName(QString name);
 		void slotGpsData(const QWhereaboutsUpdate &update);
 		void slotNewStat(int time, int distance, float speed, int altitude, int altMin, int altMax, int fix);
 
 	signals:
 		void signalReset();
+		void signalTrack(QString name);
+		void signalWayPoint(QString name);
 
 	private:
 		Ui::JourneyForm ui;
+
+		QStringList _keyboard;
 };
 
 #endif

@@ -12,6 +12,44 @@
    </rect>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_5">
+     <property name="text">
+      <string>Location:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1" colspan="2">
+    <widget class="QLineEdit" name="location">
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>Samples:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1" colspan="2">
+    <widget class="QLineEdit" name="samples">
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Duration:</string>
+     </property>
+    </widget>
+   </item>
    <item row="2" column="1" colspan="2">
     <widget class="QLineEdit" name="time">
      <property name="font">
@@ -27,6 +65,13 @@
      </property>
      <property name="readOnly">
       <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Distance:</string>
      </property>
     </widget>
    </item>
@@ -48,6 +93,13 @@
      </property>
     </widget>
    </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>Speed:</string>
+     </property>
+    </widget>
+   </item>
    <item row="4" column="1" colspan="2">
     <widget class="QLineEdit" name="speed">
      <property name="font">
@@ -63,6 +115,13 @@
      </property>
      <property name="readOnly">
       <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="label_6">
+     <property name="text">
+      <string>Altitude:</string>
      </property>
     </widget>
    </item>
@@ -84,14 +143,14 @@
      </property>
     </widget>
    </item>
-   <item row="8" column="0" colspan="3">
-    <widget class="QPushButton" name="reset">
+   <item row="6" column="0">
+    <widget class="QLabel" name="label_7">
      <property name="text">
-      <string>reset</string>
+      <string>% fix:</string>
      </property>
     </widget>
    </item>
-   <item row="7" column="1" colspan="2">
+   <item row="6" column="1" colspan="2">
     <widget class="QLineEdit" name="fix">
      <property name="font">
       <font>
@@ -109,69 +168,24 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="1" colspan="2">
-    <widget class="QLineEdit" name="samples">
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-     <property name="readOnly">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1" colspan="2">
-    <widget class="QLineEdit" name="location">
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label_5">
-     <property name="text">
-      <string>Location:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="label_4">
-     <property name="text">
-      <string>Samples:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Duration:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Distance:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0">
-    <widget class="QLabel" name="label_3">
-     <property name="text">
-      <string>Speed:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0">
-    <widget class="QLabel" name="label_6">
-     <property name="text">
-      <string>Altitude:</string>
-     </property>
-    </widget>
-   </item>
    <item row="7" column="0">
-    <widget class="QLabel" name="label_7">
+    <widget class="QPushButton" name="newTrack">
      <property name="text">
-      <string>% fix:</string>
+      <string>New trk</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="1">
+    <widget class="QPushButton" name="endTrack">
+     <property name="text">
+      <string>End trk</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="2">
+    <widget class="QPushButton" name="wayPoint">
+     <property name="text">
+      <string>Way pt</string>
      </property>
     </widget>
    </item>

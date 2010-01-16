@@ -87,12 +87,6 @@ void TTraceRecorder::slotGpsData(const QWhereaboutsUpdate &update)
 			_state = started;
 			break;
 
-		case reseting:
-			gpxNewTrack();
-			addSample(update);
-			_state = started;
-			break;
-
 		case started:
 			addSample(update);
 			break;
@@ -123,15 +117,20 @@ void TTraceRecorder::slotRecord(bool record)
 	}
 }
 
-void TTraceRecorder::slotReset()
+void TTraceRecorder::slotNewTrack(QString name)
 {
 	QMutexLocker locker(&_mutex);
 
 	if(_state == started) {
-		_state = reseting;
+		QString str = (name == QString("")) ? QString("Transit") : name;
+		gpxNewTrack(str);
 		_samples = 0;
 		emit signalRecordInfo(_filename, 0);
 	}
+}
+
+void TTraceRecorder::slotNewWayPoint(QString name)
+{
 }
 
 void TTraceRecorder::createFile(const QWhereaboutsUpdate &update)
@@ -223,18 +222,18 @@ void TTraceRecorder::gpxFooter()
 	}
 }
 
-void TTraceRecorder::gpxNewTrack()
+void TTraceRecorder::gpxNewTrack(QString &name)
 {
 	QString str;
 
 	if(_onSeg) {
 		str = QString("</trkseg>\n");
 		str += QString("</trk>\n");
-		str += QString("<trk> <name>Transit</name>\n");
+		str += QString("<trk> <name>") + name + QString("</name>\n");
 		str += QString("<trkseg>\n");
 	} else {
 		str = QString("</trk>\n");
-		str += QString("<trk> <name>Transit</name>\n");
+		str += QString("<trk> <name>") + name + QString("</name>\n");
 	}
 
 	if(_gpx != NULL) {

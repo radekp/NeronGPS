@@ -48,7 +48,8 @@ class TTraceRecorder : public QObject
 		void slotGpsState(bool fix);
 		void slotGpsData(const QWhereaboutsUpdate &update);
 		void slotRecord(bool record);
-		void slotReset();
+		void slotNewTrack(QString name);
+		void slotNewWayPoint(QString name);
 
 	signals:
 		void signalRecordInfo(QString name, int samples);
@@ -56,7 +57,7 @@ class TTraceRecorder : public QObject
 	private:
 		QMutex _mutex;
 
-		enum {stopped, starting, reseting, started} _state;
+		enum {stopped, starting, started} _state;
 		QString _dir;
 		QString _filename;
 		QFile *_bin;
@@ -71,7 +72,7 @@ class TTraceRecorder : public QObject
 
 		void gpxHeader();
 		void gpxFooter();
-		void gpxNewTrack();
+		void gpxNewTrack(QString &name);
 		void gpxStartSegment();
 		void gpxEndSegment();
 		void writeGpx(const QWhereaboutsUpdate &update);

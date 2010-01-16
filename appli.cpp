@@ -236,12 +236,13 @@ void TGpsAppli::openGpx()
 
 void TGpsAppli::openJourney()
 {
-	TJourneyForm *journeyForm = new TJourneyForm(_recorder.samples());
+	TJourneyForm *journeyForm = new TJourneyForm(_recorder.samples(), _keyboard);
 
 	connect(&_gpsStats, SIGNAL(signalStatistics(int, int, float, int, int, int, int)), journeyForm, SLOT(slotNewStat(int, int, float, int, int, int, int)));
 	connect(journeyForm, SIGNAL(signalReset()), &_gpsStats, SLOT(slotReset()));
 	connect(journeyForm, SIGNAL(signalReset()), &_mapTrailer, SLOT(slotReset()));
-	connect(journeyForm, SIGNAL(signalReset()), &_recorder, SLOT(slotReset()));
+	connect(journeyForm, SIGNAL(signalTrack(QString)), &_recorder, SLOT(slotNewTrack(QString)));
+	connect(journeyForm, SIGNAL(signalWayPoint(QString)), &_recorder, SLOT(slotNewWayPoint(QString)));
 	connect(&_recorder, SIGNAL(signalRecordInfo(QString, int)), journeyForm, SLOT(slotRecordInfo(QString, int)));
 	connect(_location, SIGNAL(updated(const QWhereaboutsUpdate &)), journeyForm, SLOT(slotGpsData(const QWhereaboutsUpdate &)));
 

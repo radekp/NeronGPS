@@ -24,10 +24,13 @@
 
 #include "include/journeyform.h"
 #include "include/gpsstatistics.h"
+#include "include/keyboardform.h"
 
-TJourneyForm::TJourneyForm(int samples, QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
+TJourneyForm::TJourneyForm(int samples, const QStringList &keyboard, QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 {
 	ui.setupUi(this);
+
+	_keyboard = keyboard;
 
 	if(samples < 0) {
 		ui.samples->setText("No recording");
@@ -35,11 +38,50 @@ TJourneyForm::TJourneyForm(int samples, QWidget *parent, Qt::WFlags f) : QWidget
 		ui.samples->setText(QString::number(samples));
 	}
 
-	connect(ui.reset, SIGNAL(clicked(bool)), this, SLOT(slotReset(bool)));
+	connect(ui.newTrack, SIGNAL(clicked(bool)), this, SLOT(slotNewTrack(bool)));
+	connect(ui.endTrack, SIGNAL(clicked(bool)), this, SLOT(slotEndTrack(bool)));
+	connect(ui.wayPoint, SIGNAL(clicked(bool)), this, SLOT(slotWayPoint(bool)));
 }
 
 TJourneyForm::~TJourneyForm()
 {
+}
+
+void TJourneyForm::slotNewTrack(bool /*checked*/)
+{
+	TKeyboardForm *keyboardForm = new TKeyboardForm(_keyboard, "Start track?");
+
+	connect(keyboardForm, SIGNAL(signalText(QString)), this, SLOT(slotTrackName(QString)));
+
+	keyboardForm->setWindowState(Qt::WindowMaximized);
+	keyboardForm->show();
+}
+
+void TJourneyForm::slotTrackName(QString name)
+{
+	emit signalTrack(name);
+	emit signalReset();
+}
+
+void TJourneyForm::slotEndTrack(bool /*checked*/)
+{
+	emit signalTrack(QString(""));
+	emit signalReset();
+}
+
+void TJourneyForm::slotWayPoint(bool /*checked*/)
+{
+	TKeyboardForm *keyboardForm = new TKeyboardForm(_keyboard, "Register way point?");
+
+	connect(keyboardForm, SIGNAL(signalText(QString)), this, SLOT(slotPointName(QString)));
+
+	keyboardForm->setWindowState(Qt::WindowMaximized);
+	keyboardForm->show();
+}
+
+void TJourneyForm::slotPointName(QString name)
+{
+	emit signalWayPoint(name);
 }
 
 void TJourneyForm::slotGpsData(const QWhereaboutsUpdate &update)
@@ -96,10 +138,5 @@ void TJourneyForm::slotNewStat(int time, int distance, float speed, int altitude
 void TJourneyForm::slotRecordInfo(QString /*name*/, int samples)
 {
 	ui.samples->setText(QString::number(samples));
-}
-
-void TJourneyForm::slotReset(bool /*checked*/)
-{
-	emit signalReset();
 }
 
