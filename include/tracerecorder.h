@@ -25,6 +25,9 @@
 #include <QFile>
 #include <QWhereaboutsUpdate>
 #include <QMutex>
+#include <QStringList>
+
+#include "include/threadmanager.h"
 
 class TSettings;
 
@@ -39,7 +42,7 @@ class TTraceRecorder : public QObject
 
 		QString dir() { return _dir; }
 
-		bool isRecording() { return _state != stopped; }
+		bool isRecording() { return _recordState != stopped; }
 		const QString &filename() { return _filename; }
 
 		int samples() { return _samples; }
@@ -57,25 +60,25 @@ class TTraceRecorder : public QObject
 	private:
 		QMutex _mutex;
 
-		enum {stopped, starting, started} _state;
+		TThreadManager _threads;
+
+		enum { stopped, starting, started } _recordState;
+		enum { out, onTrack, onSeg } _trackState;
+		QStringList _pendingWaypoints;
+		QString _trackName;
+
 		QString _dir;
+		QString _tmpDir;
 		QString _filename;
-		QFile *_bin;
-		QFile *_gpx;
+		QFile *_tracks;
+		QFile *_waypoints;
 		int _samples;
 		int _section;
-		bool _onSeg;
 
-		void createFile(const QWhereaboutsUpdate &update);
+		bool createFile(const QWhereaboutsUpdate &update);
 		void addSample(const QWhereaboutsUpdate &update);
-		void close();	
-
-		void gpxHeader();
-		void gpxFooter();
-		void gpxNewTrack(QString &name);
-		void gpxStartSegment();
-		void gpxEndSegment();
-		void writeGpx(const QWhereaboutsUpdate &update);
+		void close();
+		void endTrack();
 };
 
 #endif
