@@ -75,6 +75,9 @@ class TTraceRecorder : public QObject
 		int _samples;
 		int _section;
 
+		bool _firstSample;
+		double _minLat, _minLon, _maxLat, _maxLon;
+
 		bool createFile(const QWhereaboutsUpdate &update);
 		void addSample(const QWhereaboutsUpdate &update);
 		void close();

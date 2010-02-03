@@ -103,6 +103,6 @@ void TGpxBuilder::writeHeader(QFile &file)
 
 void TGpxBuilder::writeFooter(QFile &file)
 {
-	file.write(QString("</gpx>\n").toAscii());
+	file.write(QString("\n</gpx>\n").toAscii());
 }
 

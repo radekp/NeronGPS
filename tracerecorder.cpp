@@ -71,7 +71,7 @@ void TTraceRecorder::slotGpsState(bool fix)
 	QMutexLocker locker(&_mutex);
 
 	if(!fix && (_trackState == onSeg)) {
-		_tracks->write(QString("</trkseg>\n").toAscii());
+		_tracks->write(QString("    </trkseg>\n").toAscii());
 		_trackState = onTrack;
 	}
 }
@@ -157,6 +157,7 @@ bool TTraceRecorder::createFile(const QWhereaboutsUpdate &update)
 	if(ret = (_tracks->open(QIODevice::WriteOnly) && _waypoints->open(QIODevice::WriteOnly))) {
 		_trackName = QString("Transit");
 		_trackState = out;
+		_firstSample = true;
 
 		tUserLog() << _filename << " started";
 
@@ -177,11 +178,22 @@ bool TTraceRecorder::createFile(const QWhereaboutsUpdate &update)
 
 void TTraceRecorder::addSample(const QWhereaboutsUpdate &update)
 {
+	if(_firstSample) {
+		_firstSample = false;
+		_minLat = _maxLat = update.coordinate().latitude();
+		_minLon = _maxLon = update.coordinate().longitude();
+	} else {
+		_minLat = (_minLat < update.coordinate().latitude()) ? _minLat : update.coordinate().latitude();
+		_maxLat = (_maxLat > update.coordinate().latitude()) ? _maxLat : update.coordinate().latitude();
+		_minLon = (_minLon < update.coordinate().longitude()) ? _minLon : update.coordinate().longitude();
+		_maxLon = (_maxLon > update.coordinate().longitude()) ? _maxLon : update.coordinate().longitude();
+	}
+
 	if(_trackState == out) {
-		QString str = QString("\n<trk> <name>") + _trackName + QString("</name>\n<trkseg>\n");
+		QString str = QString("\n  <trk>\n    <name>") + _trackName + QString("</name>\n    <trkseg>\n");
 		_tracks->write(str.toAscii());
 	} else if(_trackState == onTrack) {
-		_tracks->write(QString("<trkseg>\n").toAscii());
+		_tracks->write(QString("    <trkseg>\n").toAscii());
 	}
 	_trackState = onSeg;
 
@@ -192,17 +204,17 @@ void TTraceRecorder::addSample(const QWhereaboutsUpdate &update)
 	QString altitude = (is3d) ? QString::number(update.coordinate().altitude()) : QString("nan");
 
 	while(_pendingWaypoints.count() > 0) {
-		str = QString("\n<wpt lat=\"") + latitude + QString("\" lon=\"") + longitude + QString("\">\n");
-		str += QString("  <name>") + _pendingWaypoints.takeFirst() + QString("</name>\n");
-		if(is3d) { str += QString("  <ele>") + altitude + QString("</ele>\n"); }
-		str += QString("</wpt>\n");
+		str = QString("\n  <wpt lat=\"") + latitude + QString("\" lon=\"") + longitude + QString("\">\n");
+		str += QString("    <name>") + _pendingWaypoints.takeFirst() + QString("</name>\n");
+		if(is3d) { str += QString("    <ele>") + altitude + QString("</ele>\n"); }
+		str += QString("  </wpt>\n");
 		_waypoints->write(str.toAscii());
 	}
 
-	str = QString("<trkpt lat=\"") + latitude + QString("\" lon=\"") + longitude + QString("\">\n");
-	if(is3d) { str += QString("  <ele>") + altitude + QString("</ele>\n"); }
-	str += QString("  <time>") + update.updateDateTime().toString("yyyy-MM-ddThh:mm:ssZ") + QString("</time>\n");
-	str += QString("</trkpt>\n");
+	str = QString("      <trkpt lat=\"") + latitude + QString("\" lon=\"") + longitude + QString("\">\n");
+	if(is3d) { str += QString("        <ele>") + altitude + QString("</ele>\n"); }
+	str += QString("        <time>") + update.updateDateTime().toString("yyyy-MM-ddThh:mm:ssZ") + QString("</time>\n");
+	str += QString("      </trkpt>\n");
 	_tracks->write(str.toAscii());
 
 	_samples ++;
@@ -219,7 +231,29 @@ void TTraceRecorder::close()
 		_tracks = NULL;
 		_waypoints = NULL;
 
+		QFile meta(_tmpDir + '/' + _filename + ".met");
+		if(meta.open(QIODevice::WriteOnly)) {
+			QString str;
+			str = QString("\n  <metadata>\n");
+			str += QString("    <link href=\"http://tvuillaume.free.fr/NeronGPS\">\n");
+			str += QString("      <text>NeronGPS</text>\n");
+			str += QString("    </link>\n");
+			if(!_firstSample) {
+				str += QString("    <bounds");
+				str += QString(" minlat=\"") + QString("%1").arg(_minLat, 0, 'f', 10) + QString("\"");
+				str += QString(" minlon=\"") + QString("%1").arg(_minLon, 0, 'f', 10) + QString("\"");
+				str += QString(" maxlat=\"") + QString("%1").arg(_maxLat, 0, 'f', 10) + QString("\"");
+				str += QString(" maxlon=\"") + QString("%1").arg(_maxLon, 0, 'f', 10) + QString("\"");
+				str += QString("/>\n");
+			}
+			str += QString("  </metadata>\n");
+
+			meta.write(str.toAscii());
+			meta.close();
+		}
+
 		QStringList input;
+		input += QString(_tmpDir + '/' + _filename + ".met");
 		input += QString(_tmpDir + '/' + _filename + ".wpt");
 		input += QString(_tmpDir + '/' + _filename + ".trk");
 
@@ -232,9 +266,9 @@ void TTraceRecorder::endTrack()
 {
 	QString str;
 	if(_trackState == onSeg) {
-		_tracks->write(QString("</trkseg>\n</trk>\n").toAscii());
+		_tracks->write(QString("    </trkseg>\n  </trk>\n").toAscii());
 	} else if(_trackState == onTrack) {
-		_tracks->write(QString("</trk>\n").toAscii());
+		_tracks->write(QString("  </trk>\n").toAscii());
 	}
 
 	_trackState = out;
