@@ -23,8 +23,8 @@
 
 #include <QMutex>
 #include <QTimer>
-#include <QWhereabouts>
-#include <QWhereaboutsUpdate>
+
+#include "include/gpssample.h"
 
 #define GPSSTATE_TIMEOUT	5
 
@@ -36,8 +36,7 @@ class TGpsState : public QObject
 		~TGpsState();
 
 	public slots:
-		void slotGpsData(const QWhereaboutsUpdate &update);
-		void slotGpsState(QWhereabouts::State state);
+		void slotGpsSample(TGpsSample sample);
 		void slotTimer();
 		void slotSingleShot();
 

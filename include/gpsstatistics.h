@@ -22,11 +22,11 @@
 #define GPSSTATISTICS_H
 
 #include <QObject>
-#include <QWhereaboutsUpdate>
 #include <QQueue>
 #include <QMutex>
 
 #include "include/settings.h"
+#include "include/gpssample.h"
 
 #define STAT_INVALID_SPEED	(-100000)
 #define STAT_INVALID_ALTITUDE	(-100000)
@@ -42,7 +42,7 @@ class TGpsStatistics : public QObject
 		void resend();
 
 	public slots:
-		void slotGpsData(const QWhereaboutsUpdate &update);
+		void slotGpsSample(TGpsSample sample);
 		void slotReset();
 
 	signals:

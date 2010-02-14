@@ -51,10 +51,10 @@ void TGpsData::configure(TSettings &settings, const QString &section)
 	settings.endGroup();
 }
 
-void TGpsData::slotGpsData(const QWhereaboutsUpdate &update)
+void TGpsData::slotGpsSample(TGpsSample sample)
 {
-	int newX = TConverter::prepareX(update.coordinate().longitude());
-	int newY = TConverter::prepareY(update.coordinate().latitude());
+	int newX = TConverter::prepareX(sample.longitude());
+	int newY = TConverter::prepareY(sample.latitude());
 
 	if(_lastValid && !_lastSkipped && (newX == _lastX) && (newX == _lastX)) {
 		_lastSkipped = true;
@@ -66,13 +66,13 @@ void TGpsData::slotGpsData(const QWhereaboutsUpdate &update)
 	qreal course = 0;
 	bool courseValid = false;
 
-	if(update.coordinate().type() == QWhereaboutsCoordinate::Coordinate3D) {
-		_altitude = update.coordinate().altitude();
+	if(sample.altitudeValid()) {
+		_altitude = sample.altitude();
 	}
 
 	bool noise = true;
 	if(_lastValid) {
-		float dist = TConverter::distance(_lastLat, _lastLon, update.coordinate().latitude(), update.coordinate().longitude(), _altitude);
+		float dist = TConverter::distance(_lastLat, _lastLon, sample.latitude(), sample.longitude(), _altitude);
 		if(dist > _accuracy) {
 			int xOffset = newX - _lastX;
 			int yOffset = newY - _lastY;
@@ -89,24 +89,19 @@ void TGpsData::slotGpsData(const QWhereaboutsUpdate &update)
 				course += 90;
 			}
 
-			_lastLat = update.coordinate().latitude();
-			_lastLon = update.coordinate().longitude();
+			_lastLat = sample.latitude();
+			_lastLon = sample.longitude();
 			_lastX = newX;
 			_lastY = newY;
 			noise = false;
 			courseValid = true;
 		}
 	} else {
-		_lastLat = update.coordinate().latitude();
-		_lastLon = update.coordinate().longitude();
+		_lastLat = sample.latitude();
+		_lastLon = sample.longitude();
 		_lastX = newX;
 		_lastY = newY;
 		_lastValid = true;
-	}
-
-	if(update.dataValidityFlags() & QWhereaboutsUpdate::Course) {
-		course = update.course();
-		courseValid = true;
 	}
 
 	if(courseValid)	{

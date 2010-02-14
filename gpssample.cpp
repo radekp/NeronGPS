@@ -18,47 +18,40 @@
  *
  */
 
-#ifndef GPSCLOCK_H
-#define GPSCLOCK_H
-
-#include <QMutex>
-#include <QTimer>
-#include <QTime>
-#include <QTimeZone>
+#include <QtGlobal>
+#include <QtDebug>
 
 #include "include/gpssample.h"
 
-class TGpsClock : public QObject
+TGpsSample::TGpsSample(const QDateTime &time, double latitude, double longitude)
 {
-	Q_OBJECT
-	public:
-		TGpsClock();
-		~TGpsClock();
+	_data = new TGpsSampleShared;
+	
+	_data->_time = time;
+	_data->_longitude = longitude;
+	_data->_latitude = latitude;
+}
 
-		void resend();
-		const QTimeZone &timeZone() { return _timeZone; }
+TGpsSample::TGpsSample(TGpsSample &sample)
+{
+	_data = sample.data();
+}
 
-	public slots:
-		void slotGpsSample(TGpsSample sample);
-		void slotTimer();
-		void slotSync();
+TGpsSample::TGpsSample()
+{
+	_data = NULL;
+}
 
-	signals:
-		void signalClock(QDateTime time);
-		void signalTimeZone(QTimeZone timeZone);
+TGpsSample::~TGpsSample()
+{
+	if(_data->release()) {
+		delete _data;
+	}
+}
 
-	private:
-		QMutex _mutex;
+TGpsSample &TGpsSample::operator= (TGpsSample &sample)
+{
+	_data = sample.data();
+}
 
-		bool _fix;
-		bool _sync;
-		QTimer _timer;
-		QDateTime _lastGpsTime;
-		QTime _time;
-		QTimeZone _timeZone;
-
-		void computeTimeZone(TGpsSample sample);
-};
-
-#endif
 

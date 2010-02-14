@@ -23,11 +23,11 @@
 
 #include <QObject>
 #include <QFile>
-#include <QWhereaboutsUpdate>
 #include <QMutex>
 #include <QStringList>
 
 #include "include/threadmanager.h"
+#include "include/gpssample.h"
 
 class TSettings;
 
@@ -49,7 +49,7 @@ class TTraceRecorder : public QObject
 
 	public slots:
 		void slotGpsState(bool fix);
-		void slotGpsData(const QWhereaboutsUpdate &update);
+		void slotGpsSample(TGpsSample sample);
 		void slotRecord(bool record);
 		void slotNewTrack(QString name);
 		void slotNewWayPoint(QString name);
@@ -78,8 +78,8 @@ class TTraceRecorder : public QObject
 		bool _firstSample;
 		double _minLat, _minLon, _maxLat, _maxLon;
 
-		bool createFile(const QWhereaboutsUpdate &update);
-		void addSample(const QWhereaboutsUpdate &update);
+		bool createFile(const TGpsSample &sample);
+		void addSample(const TGpsSample &sample);
 		void close();
 		void endTrack();
 };

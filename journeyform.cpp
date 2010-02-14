@@ -84,9 +84,24 @@ void TJourneyForm::slotPointName(QString name)
 	emit signalWayPoint(name);
 }
 
-void TJourneyForm::slotGpsData(const QWhereaboutsUpdate &update)
+void TJourneyForm::slotGpsSample(TGpsSample sample)
 {
-	ui.location->setText(update.coordinate().toString());
+	QString latitude;
+	QString longitude;
+	
+	if(sample.latitude() < 0) {
+		latitude = QString("%1").arg(- sample.latitude(), 0, 'f', 5) + QString("S ");
+	} else {
+		latitude = QString("%1").arg(sample.latitude(), 0, 'f', 5) + QString("N ");
+	}
+
+	if(sample.longitude() < 0) {
+		longitude = QString("%1").arg(- sample.longitude(), 0, 'f', 5) + QString('O');
+	} else {
+		longitude = QString("%1").arg(sample.longitude(), 0, 'f', 5) + QString('E');
+	}
+
+	ui.location->setText(latitude + longitude);
 }
 
 void TJourneyForm::slotNewStat(int time, int distance, float speed, int altitude, int altMin, int altMax, int fix)

@@ -21,9 +21,7 @@
 #ifndef GPSDATA_H
 #define GPSDATA_H
 
-#include <QWhereabouts>
-#include <QWhereaboutsUpdate>
-
+#include "include/gpssample.h"
 #include "include/settings.h"
 
 class TGpsData : public QObject
@@ -36,7 +34,7 @@ class TGpsData : public QObject
 		void configure(TSettings &settings, const QString &section);
 
 	public slots:
-		void slotGpsData(const QWhereaboutsUpdate &update);
+		void slotGpsSample(TGpsSample sample);
 
 	signals:
 		void signalGpsData(bool noise, int x, int y, qreal angle);

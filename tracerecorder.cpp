@@ -76,23 +76,23 @@ void TTraceRecorder::slotGpsState(bool fix)
 	}
 }
 
-void TTraceRecorder::slotGpsData(const QWhereaboutsUpdate &update)
+void TTraceRecorder::slotGpsSample(TGpsSample sample)
 {
 	QMutexLocker locker(&_mutex);
 
 	switch(_recordState)
 	{
 		case starting:
-			if(createFile(update)) {
+			if(createFile(sample)) {
 				_recordState = started;
-				addSample(update);
+				addSample(sample);
 			} else {
 				_recordState = stopped;
 			}
 			break;
 
 		case started:
-			addSample(update);
+			addSample(sample);
 			break;
 
 		default:
@@ -146,11 +146,11 @@ void TTraceRecorder::slotNewWayPoint(QString name)
 	}
 }
 
-bool TTraceRecorder::createFile(const QWhereaboutsUpdate &update)
+bool TTraceRecorder::createFile(const TGpsSample &sample)
 {
 	bool ret;
 
-	_filename = update.updateDate().toString("yyyyMMdd") + '_' + update.updateTime().toString("hhmmss");
+	_filename = sample.time().date().toString("yyyyMMdd") + '_' + sample.time().time().toString("hhmmss");
 	_tracks = new QFile(_tmpDir + '/' + _filename + ".trk");
 	_waypoints = new QFile(_tmpDir + '/' + _filename + ".wpt");
 
@@ -176,17 +176,17 @@ bool TTraceRecorder::createFile(const QWhereaboutsUpdate &update)
 	return ret;
 }
 
-void TTraceRecorder::addSample(const QWhereaboutsUpdate &update)
+void TTraceRecorder::addSample(const TGpsSample &sample)
 {
 	if(_firstSample) {
 		_firstSample = false;
-		_minLat = _maxLat = update.coordinate().latitude();
-		_minLon = _maxLon = update.coordinate().longitude();
+		_minLat = _maxLat = sample.latitude();
+		_minLon = _maxLon = sample.longitude();
 	} else {
-		_minLat = (_minLat < update.coordinate().latitude()) ? _minLat : update.coordinate().latitude();
-		_maxLat = (_maxLat > update.coordinate().latitude()) ? _maxLat : update.coordinate().latitude();
-		_minLon = (_minLon < update.coordinate().longitude()) ? _minLon : update.coordinate().longitude();
-		_maxLon = (_maxLon > update.coordinate().longitude()) ? _maxLon : update.coordinate().longitude();
+		_minLat = (_minLat < sample.latitude()) ? _minLat : sample.latitude();
+		_maxLat = (_maxLat > sample.latitude()) ? _maxLat : sample.latitude();
+		_minLon = (_minLon < sample.longitude()) ? _minLon : sample.longitude();
+		_maxLon = (_maxLon > sample.longitude()) ? _maxLon : sample.longitude();
 	}
 
 	if(_trackState == out) {
@@ -198,22 +198,21 @@ void TTraceRecorder::addSample(const QWhereaboutsUpdate &update)
 	_trackState = onSeg;
 
 	QString str;
-	QString latitude = QString("%1").arg(update.coordinate().latitude(), 0, 'f', 10);
-	QString longitude = QString("%1").arg(update.coordinate().longitude(), 0, 'f', 10);
-	bool is3d = update.coordinate().type() == QWhereaboutsCoordinate::Coordinate3D;
-	QString altitude = (is3d) ? QString::number(update.coordinate().altitude()) : QString("nan");
+	QString latitude = QString("%1").arg(sample.latitude(), 0, 'f', 10);
+	QString longitude = QString("%1").arg(sample.longitude(), 0, 'f', 10);
+	QString altitude = (sample.altitudeValid()) ? QString::number(sample.altitude()) : QString("nan");
 
 	while(_pendingWaypoints.count() > 0) {
 		str = QString("\n  <wpt lat=\"") + latitude + QString("\" lon=\"") + longitude + QString("\">\n");
 		str += QString("    <name>") + _pendingWaypoints.takeFirst() + QString("</name>\n");
-		if(is3d) { str += QString("    <ele>") + altitude + QString("</ele>\n"); }
+		if(sample.altitudeValid()) { str += QString("    <ele>") + altitude + QString("</ele>\n"); }
 		str += QString("  </wpt>\n");
 		_waypoints->write(str.toAscii());
 	}
 
 	str = QString("      <trkpt lat=\"") + latitude + QString("\" lon=\"") + longitude + QString("\">\n");
-	if(is3d) { str += QString("        <ele>") + altitude + QString("</ele>\n"); }
-	str += QString("        <time>") + update.updateDateTime().toString("yyyy-MM-ddThh:mm:ssZ") + QString("</time>\n");
+	if(sample.altitudeValid()) { str += QString("        <ele>") + altitude + QString("</ele>\n"); }
+	str += QString("        <time>") + sample.time().toString("yyyy-MM-ddThh:mm:ssZ") + QString("</time>\n");
 	str += QString("      </trkpt>\n");
 	_tracks->write(str.toAscii());
 

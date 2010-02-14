@@ -21,10 +21,9 @@
 #ifndef JOURNEYFORM_H
 #define JOURNEYFORM_H
 
-#include <QWhereabouts>
-#include <QWhereaboutsUpdate>
-
 #include "ui_journeyform.h"
+
+#include "include/gpssample.h"
 
 class TJourneyForm : public QWidget
 {
@@ -41,7 +40,7 @@ class TJourneyForm : public QWidget
 		void slotWayPoint(bool checked);
 		void slotTrackName(QString name);
 		void slotPointName(QString name);
-		void slotGpsData(const QWhereaboutsUpdate &update);
+		void slotGpsSample(TGpsSample sample);
 		void slotNewStat(int time, int distance, float speed, int altitude, int altMin, int altMax, int fix);
 
 	signals:

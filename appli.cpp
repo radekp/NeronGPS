@@ -32,8 +32,6 @@
 #include <QtDebug>
 #include <QGraphicsPixmapItem>
 #include <QDesktopWidget>
-#include <QWhereaboutsFactory>
-#include <QNmeaWhereabouts>
 #include <QSoftMenuBar>
 #include <QTimeZone>
 #include <QtopiaServiceRequest>
@@ -42,6 +40,7 @@
 #include "include/global.h"
 #include "include/keyboard.h"
 #include "include/converter.h"
+#include "include/gpssample.h"
 
 TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 {
@@ -136,27 +135,18 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 	_actions.connectToggle("Record", _recorder.isRecording(), &_recorder, SLOT(slotRecord(bool)));
 	_actions.connectToggle("Display trailer", true, &_mapTrailer, SLOT(slotEnable(bool)));
 
-/*
-        QFile *sampleFile = new QFile("/home/root/nmea_sample.txt", this);
-        sampleFile->open(QIODevice::ReadOnly);
-        QNmeaWhereabouts *whereabouts = new QNmeaWhereabouts(this);
-        whereabouts->setUpdateMode(QNmeaWhereabouts::SimulationMode);
-        whereabouts->setSourceDevice(sampleFile);
-	_location = whereabouts;
-*/
-
-	_location = QWhereaboutsFactory::create();
-	connect(_location, SIGNAL(stateChanged(QWhereabouts::State)), &_gpsState, SLOT(slotGpsState(QWhereabouts::State)));
-	connect(_location, SIGNAL(updated(const QWhereaboutsUpdate &)), &_gpsState, SLOT(slotGpsData(const QWhereaboutsUpdate &)));
-	connect(_location, SIGNAL(updated(const QWhereaboutsUpdate &)), &_gpsData, SLOT(slotGpsData(const QWhereaboutsUpdate &)));
-	connect(_location, SIGNAL(updated(const QWhereaboutsUpdate &)), &_gpsClock, SLOT(slotGpsData(const QWhereaboutsUpdate &)));
-	connect(_location, SIGNAL(updated(const QWhereaboutsUpdate &)), &_mapTrailer, SLOT(slotGpsData(const QWhereaboutsUpdate &)));
-	connect(_location, SIGNAL(updated(const QWhereaboutsUpdate &)), &_recorder, SLOT(slotGpsData(const QWhereaboutsUpdate &)));
-	connect(_location, SIGNAL(updated(const QWhereaboutsUpdate &)), &_gpsStats, SLOT(slotGpsData(const QWhereaboutsUpdate &)));
+	connect(&_gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_gpsState, SLOT(slotGpsSample(TGpsSample)));
+	connect(&_gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_gpsData, SLOT(slotGpsSample(TGpsSample)));
+	connect(&_gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_gpsClock, SLOT(slotGpsSample(TGpsSample)));
+	connect(&_gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_mapTrailer, SLOT(slotGpsSample(TGpsSample)));
+	connect(&_gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_recorder, SLOT(slotGpsSample(TGpsSample)));
+	connect(&_gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_gpsStats, SLOT(slotGpsSample(TGpsSample)));
 	connect(&_gpsState, SIGNAL(signalGpsState(bool)), &_drawState, SLOT(slotGpsState(bool)));
 	connect(&_gpsState, SIGNAL(signalGpsState(bool)), &_recorder, SLOT(slotGpsState(bool)));
 	connect(&_gpsData, SIGNAL(signalGpsData(bool, int, int, qreal)), &_drawState, SLOT(slotGpsData(bool, int, int, qreal)));
-	_location->startUpdates(1000); 
+
+//	_gpsSource.start(QString("/home/root/nmea_sample.txt")); 
+	_gpsSource.start(); 
 
 	connect(&_mapTraces, SIGNAL(signalTraceLoaded(int, int, int, int)), &_drawState, SLOT(slotCenterTo(int, int, int, int)));
 	connect(&TGlobal::messageBoard(), SIGNAL(signalRefresh()), &_drawState, SLOT(slotRefresh()));
@@ -244,7 +234,7 @@ void TGpsAppli::openJourney()
 	connect(journeyForm, SIGNAL(signalTrack(QString)), &_recorder, SLOT(slotNewTrack(QString)));
 	connect(journeyForm, SIGNAL(signalWayPoint(QString)), &_recorder, SLOT(slotNewWayPoint(QString)));
 	connect(&_recorder, SIGNAL(signalRecordInfo(QString, int)), journeyForm, SLOT(slotRecordInfo(QString, int)));
-	connect(_location, SIGNAL(updated(const QWhereaboutsUpdate &)), journeyForm, SLOT(slotGpsData(const QWhereaboutsUpdate &)));
+	connect(&_gpsSource, SIGNAL(signalUpdate(TGpsSample)), journeyForm, SLOT(slotGpsSample(TGpsSample)));
 
 	journeyForm->setWindowState(Qt::WindowMaximized);
 	journeyForm->show();

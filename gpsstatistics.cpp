@@ -46,23 +46,23 @@ void TGpsStatistics::configure(TSettings &settings, const QString &section)
 	settings.endGroup();
 }
 
-void TGpsStatistics::slotGpsData(const QWhereaboutsUpdate &update)
+void TGpsStatistics::slotGpsSample(TGpsSample sample)
 {
 	QMutexLocker locker(&_mutex);
 
-	uint newTime = update.updateDateTime().toTime_t();
+	uint newTime = sample.time().toTime_t();
 
 	if(_first) {
-		_lastLat = update.coordinate().latitude();
-		_lastLon = update.coordinate().longitude();
+		_lastLat = sample.latitude();
+		_lastLon = sample.longitude();
 		_lastTime = newTime;
 		_beginning = _lastTime;
 		_lastSampleTime = _lastTime;
 		_first = false;
 	} else if (newTime > _lastTime) {
 
-		if(update.coordinate().type() == QWhereaboutsCoordinate::Coordinate3D) {
-			_altitude = update.coordinate().altitude();
+		if(sample.altitudeValid()) {
+			_altitude = sample.altitude();
 
 			if(_altMin == STAT_INVALID_ALTITUDE) {
 				_altMin = _altMax = _altitude;
@@ -73,17 +73,17 @@ void TGpsStatistics::slotGpsData(const QWhereaboutsUpdate &update)
 			}
 		}
 
-		if(update.dataValidityFlags() & QWhereaboutsUpdate::GroundSpeed) {
-			_speed = update.groundSpeed() * 3.6;
+		if(sample.speedValid()) {
+			_speed = sample.speed() * 3.6;
 		}
 
 		float altitude = (_altitude == STAT_INVALID_ALTITUDE) ? 0 : _altitude;
-		float dist = TConverter::distance(_lastLat, _lastLon, update.coordinate().latitude(), update.coordinate().longitude(), altitude);
+		float dist = TConverter::distance(_lastLat, _lastLon, sample.latitude(), sample.longitude(), altitude);
 
 		if(dist > _accuracy) {
 			_distance += dist;
-			_lastLat = update.coordinate().latitude();
-			_lastLon = update.coordinate().longitude();
+			_lastLat = sample.latitude();
+			_lastLon = sample.longitude();
 			_lastSampleTime = newTime;
 		}
 

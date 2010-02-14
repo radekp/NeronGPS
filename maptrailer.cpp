@@ -50,10 +50,10 @@ void TMapTrailer::configure(TSettings &settings, const QString &section)
 	settings.endGroup();
 }
 
-void TMapTrailer::slotGpsData(const QWhereaboutsUpdate &update)
+void TMapTrailer::slotGpsSample(TGpsSample sample)
 {
-	int x = TConverter::prepareX(update.coordinate().longitude());
-	int y = TConverter::prepareY(update.coordinate().latitude());
+	int x = TConverter::prepareX(sample.longitude());
+	int y = TConverter::prepareY(sample.latitude());
 	
 	_trailer.addSample(x, y);
 }

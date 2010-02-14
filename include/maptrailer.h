@@ -25,11 +25,11 @@
 #include <QList>
 #include <QPainterPath>
 #include <QMutex>
-#include <QWhereaboutsUpdate>
 
 #include "include/trace.h"
 #include "include/drawstate.h"
 #include "include/mapdrawlist.h"
+#include "include/gpssample.h"
 
 class TMapTrailer : public TMapDrawListElement
 {
@@ -42,7 +42,7 @@ class TMapTrailer : public TMapDrawListElement
 		void draw(QPainter &painter, TDrawState &drawState);
 
 	public slots:
-		void slotGpsData(const QWhereaboutsUpdate &update);
+		void slotGpsSample(TGpsSample sample);
 		void slotEnable(bool enable);
 		void slotReset();
 

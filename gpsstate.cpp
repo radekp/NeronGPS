@@ -72,20 +72,11 @@ void TGpsState::slotSingleShot()
 	goNoFix();
 }
 
-void TGpsState::slotGpsData(const QWhereaboutsUpdate &/*update*/)
+void TGpsState::slotGpsSample(TGpsSample /*sample*/)
 {
 	QMutexLocker locker(&_mutex);
 
 	goFix();
-}
-
-void TGpsState::slotGpsState(QWhereabouts::State state)
-{
-	QMutexLocker locker(&_mutex);
-
-	if(state != QWhereabouts::PositionFixAcquired) {
-		goNoFix();
-	}
 }
 
 void TGpsState::goFix()

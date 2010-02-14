@@ -46,15 +46,15 @@ void TGpsClock::resend()
 	}
 }
 
-void TGpsClock::slotGpsData(const QWhereaboutsUpdate &update)
+void TGpsClock::slotGpsSample(TGpsSample sample)
 {
 	QMutexLocker locker(&_mutex);
 
 	if(!_timeZone.isValid()) {
-		computeTimeZone(update);
+		computeTimeZone(sample);
 	}
 
-	_lastGpsTime = update.updateDateTime();
+	_lastGpsTime = sample.time();
 	_time.start();
 
 	if(!_fix) {
@@ -89,10 +89,10 @@ void TGpsClock::slotSync()
 	_sync = true;
 }
 
-void TGpsClock::computeTimeZone(const QWhereaboutsUpdate &update)
+void TGpsClock::computeTimeZone(TGpsSample sample)
 {
-	double lat = update.coordinate().latitude();
-	double lon = update.coordinate().longitude();
+	double lat = sample.latitude();
+	double lon = sample.longitude();
 
 	QStringList ids = QTimeZone::ids();
 
