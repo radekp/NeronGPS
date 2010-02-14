@@ -24,8 +24,6 @@
 #include <QObject>
 #include <QWidget>
 #include <QList>
-#include <QWhereabouts>
-#include <QWhereaboutsUpdate>
 
 #include "include/buttonsboard.h"
 #include "include/messageboard.h"
