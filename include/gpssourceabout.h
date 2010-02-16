@@ -18,23 +18,23 @@
  *
  */
 
-#ifndef GPSSOURCEWABOUT_H
-#define GPSSOURCEWABOUT_H
+#ifndef GPSSOURCEABOUT_H
+#define GPSSOURCEABOUT_H
 
 #include <QWhereabouts>
 #include <QWhereaboutsUpdate>
 #include <QFile>
 
-#include "include/gpssample.h"
+#include "include/gpssource.h"
 
-class TGpsSourceAbout : public QObject
+class TGpsSourceAbout : public TGpsSource
 {
 	Q_OBJECT
 	public:
+		TGpsSourceAbout(const QString &fileName);
 		TGpsSourceAbout();
 		~TGpsSourceAbout();
 
-		void start(const QString &fileName);
 		void start();
 
 	public slots:

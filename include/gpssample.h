@@ -51,12 +51,14 @@ class TGpsSample
 {
 	public:
 		TGpsSample(const QDateTime &time, double latitude, double longitude);
-		TGpsSample(TGpsSample &sample);
+		TGpsSample(const TGpsSample &sample);
 		TGpsSample();
 		~TGpsSample();
 
 		void setAltitude(float altitude) { _data->_altitudeValid = true; _data->_altitude = altitude; }
 		void setSpeed(float speed) { _data->_speedValid = true; _data->_speed = speed; }
+
+		bool isValid() const { return _data != NULL; }
 
 		double latitude() const { return _data->_latitude; }
 		double longitude() const { return _data->_longitude; }
@@ -66,13 +68,15 @@ class TGpsSample
 		bool speedValid() const { return _data->_speedValid; }
 		float speed() const { return _data->_speed; }
 
-		TGpsSample &operator= (TGpsSample &sample);
+		TGpsSample &operator= (const TGpsSample &sample);
 
 	protected:
-		TGpsSampleShared *data() { _data->get(); return _data; }
+		TGpsSampleShared *data() const { if(_data != NULL) _data->get(); return _data; }
 
 	private:
 		TGpsSampleShared *_data;
+
+		void release();
 };
 
 #endif

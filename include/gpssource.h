@@ -18,51 +18,21 @@
  *
  */
 
-#include <QtGlobal>
-#include <QtDebug>
+#ifndef GPSSOURCE_H
+#define GPSSOURCE_H
+
+#include <QObject>
 
 #include "include/gpssample.h"
 
-TGpsSample::TGpsSample(const QDateTime &time, double latitude, double longitude)
+class TGpsSource : public QObject
 {
-	_data = new TGpsSampleShared;
-	
-	_data->_time = time;
-	_data->_longitude = longitude;
-	_data->_latitude = latitude;
-}
+	public:
+		virtual void start() = 0;
 
-TGpsSample::TGpsSample(const TGpsSample &sample)
-{
-	_data = sample.data();
-}
+	signals:
+		virtual void signalUpdate(TGpsSample sample) = 0;
+};
 
-TGpsSample::TGpsSample()
-{
-	_data = NULL;
-}
-
-TGpsSample::~TGpsSample()
-{
-	release();
-}
-
-TGpsSample &TGpsSample::operator= (const TGpsSample &sample)
-{
-	release();
-
-	_data = sample.data();
-
-	return *this;
-}
-
-void TGpsSample::release()
-{
-	if(_data != NULL) {
-		if(_data->release()) {
-			delete _data;
-		}
-	}
-}
-
+#endif
 

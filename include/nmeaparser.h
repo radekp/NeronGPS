@@ -18,51 +18,32 @@
  *
  */
 
-#include <QtGlobal>
-#include <QtDebug>
+#ifndef NMEAPARSER_H
+#define NMEAPARSER_H
+
+#include <QStringList>
 
 #include "include/gpssample.h"
 
-TGpsSample::TGpsSample(const QDateTime &time, double latitude, double longitude)
+class TNmeaParser
 {
-	_data = new TGpsSampleShared;
-	
-	_data->_time = time;
-	_data->_longitude = longitude;
-	_data->_latitude = latitude;
-}
+	public:
+		TNmeaParser();
+		~TNmeaParser();
 
-TGpsSample::TGpsSample(const TGpsSample &sample)
-{
-	_data = sample.data();
-}
+		bool parse(const QString &sentence);
+		bool sampleReady() const { return _sampleReady; }
+		TGpsSample &retrieveSample() { _sampleReady = false; return _sample; }
 
-TGpsSample::TGpsSample()
-{
-	_data = NULL;
-}
+	private:
+		TGpsSample _sample;
+		bool _sampleReady;
 
-TGpsSample::~TGpsSample()
-{
-	release();
-}
+		bool parseRMC(const QStringList &elements);
+		QDateTime parseDateTime(const QString &strDate, const QString &strTime);
+		double parseLatitude(const QString &angle, const QString &direction);
+		double parseLongitude(const QString &angle, const QString &direction);
+};
 
-TGpsSample &TGpsSample::operator= (const TGpsSample &sample)
-{
-	release();
-
-	_data = sample.data();
-
-	return *this;
-}
-
-void TGpsSample::release()
-{
-	if(_data != NULL) {
-		if(_data->release()) {
-			delete _data;
-		}
-	}
-}
-
+#endif
 

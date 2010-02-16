@@ -25,8 +25,21 @@
 
 #include "include/gpssourceabout.h"
 
+TGpsSourceAbout::TGpsSourceAbout(const QString &fileName)
+{
+        _file = new QFile(fileName);
+        _file->open(QIODevice::ReadOnly);
+
+        QNmeaWhereabouts *temp = new QNmeaWhereabouts();
+        temp->setUpdateMode(QNmeaWhereabouts::SimulationMode);
+        temp->setSourceDevice(_file);
+
+	_about = temp;
+}
+
 TGpsSourceAbout::TGpsSourceAbout()
 {
+	_about = QWhereaboutsFactory::create();
 	_file = NULL;
 }
 
@@ -39,23 +52,10 @@ TGpsSourceAbout::~TGpsSourceAbout()
 	}
 }
 
-void TGpsSourceAbout::start(const QString &fileName)
-{
-        _file = new QFile(fileName);
-        _file->open(QIODevice::ReadOnly);
-
-        QNmeaWhereabouts *temp = new QNmeaWhereabouts();
-        temp->setUpdateMode(QNmeaWhereabouts::SimulationMode);
-        temp->setSourceDevice(_file);
-
-	_about = temp;
-	connect(_about, SIGNAL(updated(const QWhereaboutsUpdate &)), this, SLOT(slotUpdate(const QWhereaboutsUpdate &)));
-	_about->startUpdates(1000); 
-}
-
 void TGpsSourceAbout::start()
 {
-	_about = QWhereaboutsFactory::create();
+	connect(_about, SIGNAL(updated(const QWhereaboutsUpdate &)), this, SLOT(slotUpdate(const QWhereaboutsUpdate &)));
+
 	_about->startUpdates(1000); 
 }
 

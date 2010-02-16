@@ -47,6 +47,7 @@
 #include "include/mapdrawlist.h"
 #include "include/settings.h"
 #include "include/gpssourceabout.h"
+#include "include/gpssourcenmea.h"
 #include "include/gpsstatistics.h"
 #include "include/mapcentering.h"
 #include "include/mapcross.h"
@@ -84,7 +85,7 @@ class TGpsAppli : public QWidget
 		QMenu _others;
 		QStringList _keyboard;
 
-		TGpsSourceAbout _gpsSource;
+		TGpsSource *_gpsSource;
 		TGpsState _gpsState;
 		TGpsData _gpsData;
 		TGpsClock _gpsClock;

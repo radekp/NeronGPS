@@ -18,51 +18,39 @@
  *
  */
 
-#include <QtGlobal>
-#include <QtDebug>
+#ifndef GPSSOURCENMEA_H
+#define GPSSOURCENMEA_H
 
-#include "include/gpssample.h"
+#include <QFile>
+#include <QDateTime>
 
-TGpsSample::TGpsSample(const QDateTime &time, double latitude, double longitude)
+#include "include/gpssource.h"
+#include "include/nmeaparser.h"
+
+class TGpsSourceNmea : public TGpsSource
 {
-	_data = new TGpsSampleShared;
-	
-	_data->_time = time;
-	_data->_longitude = longitude;
-	_data->_latitude = latitude;
-}
+	Q_OBJECT
+	public:
+		TGpsSourceNmea(const QString &fileName);
+		~TGpsSourceNmea();
 
-TGpsSample::TGpsSample(const TGpsSample &sample)
-{
-	_data = sample.data();
-}
+		void start();
 
-TGpsSample::TGpsSample()
-{
-	_data = NULL;
-}
+	public slots:
+		void slotTimer();
 
-TGpsSample::~TGpsSample()
-{
-	release();
-}
+	signals:
+		void signalUpdate(TGpsSample sample);
 
-TGpsSample &TGpsSample::operator= (const TGpsSample &sample)
-{
-	release();
+	private:
+		TNmeaParser _parser;
+		QFile *_file;
+		QDateTime _lastTime;
+		TGpsSample _sample;
 
-	_data = sample.data();
+		void parse();
+		int interval(QDateTime first, QDateTime next);
+};
 
-	return *this;
-}
-
-void TGpsSample::release()
-{
-	if(_data != NULL) {
-		if(_data->release()) {
-			delete _data;
-		}
-	}
-}
-
+#endif
 
