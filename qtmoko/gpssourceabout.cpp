@@ -23,7 +23,7 @@
 #include <QWhereaboutsFactory>
 #include <QNmeaWhereabouts>
 
-#include "include/gpssourceabout.h"
+#include "qtmoko/gpssourceabout.h"
 
 TGpsSourceAbout::TGpsSourceAbout(const QString &fileName)
 {

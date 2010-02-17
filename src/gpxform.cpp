@@ -27,7 +27,7 @@
 
 #include "include/gpxform.h"
 
-TGpxForm::TGpxForm(const QString &dir, const QStringList &loaded, QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
+TGpxForm::TGpxForm(const QString &dir, QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 {
 	ui.setupUi(this);
 

@@ -41,7 +41,7 @@ TKeyboardForm::~TKeyboardForm()
 	_keyboard.detach();
 }
 
-void TKeyboardForm::closeEvent(QCloseEvent *event)
+void TKeyboardForm::closeEvent(QCloseEvent */*event*/)
 {
 	QMessageBox dialog(QMessageBox::Question, "Closing", _exitText, QMessageBox::Yes | QMessageBox::No);
 	if(dialog.exec() == QMessageBox::Yes) {

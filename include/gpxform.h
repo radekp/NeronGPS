@@ -32,7 +32,7 @@ class TGpxForm : public QWidget
 	Q_OBJECT
 
 	public:
-		TGpxForm(const QString &dir, const QStringList &loaded, QWidget *parent = 0, Qt::WFlags f = 0);
+		TGpxForm(const QString &dir, QWidget *parent = 0, Qt::WFlags f = 0);
 		virtual ~TGpxForm();
 		
 	public slots:

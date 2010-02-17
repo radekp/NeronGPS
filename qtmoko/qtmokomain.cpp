@@ -30,8 +30,8 @@
 #include <QDesktopWidget>
 #include <QtopiaServiceRequest>
 
-#include "include/qtmokomain.h"
-#include "include/gpssourceabout.h"
+#include "qtmoko/qtmokomain.h"
+#include "qtmoko/gpssourceabout.h"
 #include "include/gpssourcenmea.h"
 
 TQtMokoMain::TQtMokoMain(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)

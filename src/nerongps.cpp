@@ -205,7 +205,7 @@ void TNeronGPS::openCache()
 
 void TNeronGPS::openGpx()
 {
-	TGpxForm *gpxForm = new TGpxForm(_recorder.dir(), QStringList());
+	TGpxForm *gpxForm = new TGpxForm(_recorder.dir());
 
 	connect(gpxForm, SIGNAL(signalGpx(QString, QColor)), &_gpxLoader, SLOT(slotLoad(QString, QColor)));
 	connect(gpxForm, SIGNAL(signalClear()), &_mapTraces, SLOT(slotClear()));
