@@ -18,44 +18,25 @@
  *
  */
 
-#ifndef MAPTRACES_H
-#define MAPTRACES_H
+#ifndef QTMOKOMAIN_H
+#define QTMOKOMAIN_H
 
-#include <QObject>
-#include <QList>
-#include <QPainterPath>
-#include <QMutex>
+#include <QMainWindow>
+#include <QMenu>
 
-#include "include/trace.h"
-#include "include/drawstate.h"
-#include "include/mapdrawlist.h"
+#include "include/nerongps.h"
+#include "include/gpssource.h"
 
-class TMapTraces : public TMapDrawListElement
+class TQtMokoMain : public QWidget
 {
 	Q_OBJECT
 	public:
-		TMapTraces();
-		~TMapTraces();
-
-		void configure(TSettings &settings, const QString &section);
-		void draw(QPainter &painter, TDrawState &drawState);
-
-	public slots:
-		void slotNewTraces(QList<TTrace *> *traces);
-		void slotClear();
-
-	signals:
-		void signalTraceLoaded(int xmin, int xmax, int ymin, int ymax);
+		TQtMokoMain(QWidget *parent = 0, Qt::WFlags f = 0);
+		virtual ~TQtMokoMain();
 
 	private:
-		QMutex _mutex;
-
-		QList<TTrace *> _traces;
-
-		QString _traceDir;
-		QPen _tracePen;
-		int _tracePoint;
-		int _traceTransparency;
+		TGpsSource *_gpsSource;
+		TNeronGPS *_neronGPS;
 };
 
 #endif

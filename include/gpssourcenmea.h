@@ -32,6 +32,7 @@ class TGpsSourceNmea : public TGpsSource
 	Q_OBJECT
 	public:
 		TGpsSourceNmea(const QString &fileName);
+		TGpsSourceNmea();
 		~TGpsSourceNmea();
 
 		void start();

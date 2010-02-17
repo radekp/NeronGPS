@@ -18,21 +18,13 @@
  *
  */
 
-#ifndef APPLI_H
-#define APPLI_H
+#ifndef NERONGPS_H
+#define NERONGPS_H
 
-#include <QMainWindow>
+#include <QWidget>
+#include <QObject>
 #include <QMenu>
 
-#include "include/clockform.h"
-#include "include/cacheform.h"
-#include "include/gpxform.h"
-#include "include/journeyform.h"
-#include "include/logform.h"
-#include "include/serverform.h"
-#include "include/zoomform.h"
-#include "include/magnificateform.h"
-#include "include/poiform.h"
 #include "include/tileserver.h"
 #include "include/tilebatchloader.h"
 #include "include/mapwidget.h"
@@ -46,8 +38,7 @@
 #include "include/drawstate.h"
 #include "include/mapdrawlist.h"
 #include "include/settings.h"
-#include "include/gpssourceabout.h"
-#include "include/gpssourcenmea.h"
+#include "include/gpssource.h"
 #include "include/gpsstatistics.h"
 #include "include/mapcentering.h"
 #include "include/mapcross.h"
@@ -59,13 +50,13 @@
 #include "include/gpxloader.h"
 #include "include/tracerecorder.h"
 
-class TGpsAppli : public QWidget
+class TNeronGPS : public QObject
 {
 	Q_OBJECT
 
 	public:
-		TGpsAppli(QWidget *parent = 0, Qt::WFlags f = 0);
-		virtual ~TGpsAppli();
+		TNeronGPS(QWidget *mainWindow, QMenu *contextMenu, TGpsSource *gpsSource);
+		virtual ~TNeronGPS();
 
 	public slots:
 		void openClock();
@@ -114,3 +105,4 @@ class TGpsAppli : public QWidget
 };
 
 #endif
+

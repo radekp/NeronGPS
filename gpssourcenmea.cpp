@@ -33,6 +33,11 @@ TGpsSourceNmea::TGpsSourceNmea(const QString &fileName)
 	}
 }
 
+TGpsSourceNmea::TGpsSourceNmea()
+{
+	_file = NULL;
+}
+
 TGpsSourceNmea::~TGpsSourceNmea()
 {
 	if(_file != NULL) {

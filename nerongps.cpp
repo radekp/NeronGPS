@@ -20,39 +20,34 @@
 
 #include <QtGlobal>
 
-#ifdef Q_WS_QWS
-#include <QAction>
-#include <QMenu>
-#include <QtopiaApplication>
-#else
-#include <QApplication>
-#endif
-
 #include <QMessageBox>
 #include <QtDebug>
 #include <QGraphicsPixmapItem>
 #include <QDesktopWidget>
 #include <QSoftMenuBar>
 #include <QTimeZone>
-#include <QtopiaServiceRequest>
 
-#include "include/appli.h"
+#include "include/nerongps.h"
+#include "include/cacheform.h"
+#include "include/gpxform.h"
+#include "include/journeyform.h"
+#include "include/logform.h"
+#include "include/serverform.h"
+#include "include/zoomform.h"
+#include "include/magnificateform.h"
+#include "include/poiform.h"
 #include "include/global.h"
 #include "include/keyboard.h"
 #include "include/converter.h"
 #include "include/gpssample.h"
+#include "include/gpssourcenmea.h"
+#include "include/clockform.h"
 
-TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
+TNeronGPS::TNeronGPS(QWidget *mainWindow, QMenu *contextMenu, TGpsSource *gpsSource)
 {
-	qDebug("In TGpsAppli()");
+	qDebug("In TNeronGPS()");
 
-#ifdef Q_WS_QWS
-	setObjectName("NeronGPS");
-	QtopiaApplication::setInputMethodHint(this, QtopiaApplication::AlwaysOff);
-	setWindowTitle(tr("NeronGPS", "application header"));
-#endif
-
-	showMaximized();
+	_gpsSource = gpsSource;
 
 	_server.configure(_settings, "tileserver", "caches");
 	_mapTraces.configure(_settings, "traces");
@@ -69,8 +64,6 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 	_gpsStats.configure(_settings, "gps");
 	_drawState.configure(_settings, "map");
 	_keyboard = TKeyboard::getKeyboards(_settings, "keyboard");
-
-	QMenu *contextMenu = QSoftMenuBar::menuFor(this);
 
 	contextMenu->addSeparator ();
 	_others.setTitle("More...");
@@ -135,10 +128,6 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 	_actions.connectToggle("Record", _recorder.isRecording(), &_recorder, SLOT(slotRecord(bool)));
 	_actions.connectToggle("Display trailer", true, &_mapTrailer, SLOT(slotEnable(bool)));
 
-//	_gpsSource = new TGpsSourceNmea(QString("/home/root/nmea_sample.txt"));
-//	_gpsSource = new TGpsSourceAbout(QString("/home/root/nmea_sample.txt"));
-	_gpsSource = new TGpsSourceAbout();
-
 	connect(_gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_gpsState, SLOT(slotGpsSample(TGpsSample)));
 	connect(_gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_gpsData, SLOT(slotGpsSample(TGpsSample)));
 	connect(_gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_gpsClock, SLOT(slotGpsSample(TGpsSample)));
@@ -165,22 +154,21 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 	_drawList += &_mapCross;
 	_drawList += &_mapTarget;
 	_drawList += &_mapCursor;
-	_mapWidget = new TMapWidget(&_drawState, &_drawList, &_buttons, &TGlobal::messageBoard(), this);
+	_mapWidget = new TMapWidget(&_drawState, &_drawList, &_buttons, &TGlobal::messageBoard(), mainWindow);
 
 	connect(&_drawState, SIGNAL(signalUpdate()), _mapWidget, SLOT(update()));
-	_mapWidget->resize(this->size());
+	_mapWidget->resize(mainWindow->size());
 	_mapWidget->show();
 }
 
-TGpsAppli::~TGpsAppli()
+TNeronGPS::~TNeronGPS()
 {
-	delete _gpsSource;
 	delete _mapWidget;
 
-	qDebug("In ~TGpsAppli()");
+	qDebug("In ~TNeronGPS()");
 }
 
-void TGpsAppli::closeEvent(QCloseEvent *event)
+void TNeronGPS::closeEvent(QCloseEvent *event)
 {
 	QMessageBox dialog(QMessageBox::Question, "Closing", "Exit?", QMessageBox::Yes | QMessageBox::No);
 	if(dialog.exec() == QMessageBox::Yes) {
@@ -190,7 +178,7 @@ void TGpsAppli::closeEvent(QCloseEvent *event)
 	}
 }
 
-void TGpsAppli::openClock()
+void TNeronGPS::openClock()
 {
 	TClockForm *clockForm = new TClockForm();
 
@@ -204,7 +192,7 @@ void TGpsAppli::openClock()
 	_gpsClock.resend();
 }
 
-void TGpsAppli::openCache()
+void TNeronGPS::openCache()
 {
 	TCacheForm *cacheForm = new TCacheForm(_server.getCacheDir(), _server.getCacheList(), _server.getServerList(), _batch.getBatchLoadingCache(), _batch.zoomStart(), _batch.zoomStop());
 
@@ -217,7 +205,7 @@ void TGpsAppli::openCache()
 	cacheForm->show();
 }
 
-void TGpsAppli::openGpx()
+void TNeronGPS::openGpx()
 {
 	TGpxForm *gpxForm = new TGpxForm(_recorder.dir(), QStringList());
 
@@ -228,7 +216,7 @@ void TGpsAppli::openGpx()
 	gpxForm->show();
 }
 
-void TGpsAppli::openJourney()
+void TNeronGPS::openJourney()
 {
 	TJourneyForm *journeyForm = new TJourneyForm(_recorder.samples(), _keyboard);
 
@@ -246,7 +234,7 @@ void TGpsAppli::openJourney()
 	_gpsStats.resend();
 }
 
-void TGpsAppli::openUserLog()
+void TNeronGPS::openUserLog()
 {
 	TLogForm *logForm = new TLogForm(TGlobal::userLog());
 
@@ -254,7 +242,7 @@ void TGpsAppli::openUserLog()
 	logForm->show();
 }
 
-void TGpsAppli::openServer()
+void TNeronGPS::openServer()
 {
 	TServerForm *serverForm = new TServerForm(_server.getServerList(), _drawState.httpName());
 
@@ -264,7 +252,7 @@ void TGpsAppli::openServer()
 	serverForm->show();
 }
 
-void TGpsAppli::openZoom()
+void TNeronGPS::openZoom()
 {
 	TZoomForm *zoomForm = new TZoomForm(_drawState.zoom());
 
@@ -274,7 +262,7 @@ void TGpsAppli::openZoom()
 	zoomForm->show();
 }
 
-void TGpsAppli::openMagnification()
+void TNeronGPS::openMagnification()
 {
 	TMagnificateForm *magnificationForm = new TMagnificateForm(_drawState.magnificationParam());
 
@@ -284,7 +272,7 @@ void TGpsAppli::openMagnification()
 	magnificationForm->show();
 }
 
-void TGpsAppli::openPoi()
+void TNeronGPS::openPoi()
 {
 	int x, y;
 	_drawState.getPosition(x, y);
