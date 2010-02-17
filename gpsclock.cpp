@@ -21,8 +21,6 @@
 #include <QtGlobal>
 #include <QtDebug>
 #include <QMessageBox>
-#include <QtopiaServiceRequest>
-#include <QTimeZone>
 
 #include "include/gpsclock.h"
 #include "include/converter.h"
@@ -30,7 +28,6 @@
 TGpsClock::TGpsClock()
 {
 	_fix = false;
-	_sync = false;
 
 	connect(&_timer, SIGNAL(timeout()), this, SLOT(slotTimer()));
 }
@@ -39,20 +36,9 @@ TGpsClock::~TGpsClock()
 {
 }
 
-void TGpsClock::resend()
-{
-	if(_timeZone.isValid()) {
-		emit signalTimeZone(_timeZone);
-	}
-}
-
 void TGpsClock::slotGpsSample(TGpsSample sample)
 {
 	QMutexLocker locker(&_mutex);
-
-	if(!_timeZone.isValid()) {
-		computeTimeZone(sample);
-	}
 
 	_lastGpsTime = sample.time();
 	_time.start();
@@ -68,48 +54,6 @@ void TGpsClock::slotTimer()
 {
 	QMutexLocker locker(&_mutex);
 
-	if(_sync) {
-		_sync = false;
-
-		QDateTime time = _lastGpsTime.addMSecs(_time.elapsed() - 500);
-		time.setTimeSpec(Qt::UTC);
-
-		QtopiaServiceRequest req("TimeUpdate", "changeSystemTime(uint,QString)");
-		req << (uint)time.toTime_t() << QTimeZone::current().id();
-		req.send();
-	}
-
 	signalClock(_lastGpsTime.addMSecs(_time.elapsed()));
-}
-
-void TGpsClock::slotSync()
-{
-	QMutexLocker locker(&_mutex);
-
-	_sync = true;
-}
-
-void TGpsClock::computeTimeZone(TGpsSample sample)
-{
-	double lat = sample.latitude();
-	double lon = sample.longitude();
-
-	QStringList ids = QTimeZone::ids();
-
-	int i;
-	float distance = 0;
-	for(i = 0; i < ids.size(); i++) {
-		QTimeZone tmpZone(ids[i].toAscii().data());
-		float dist = TConverter::distance(lat, lon, ((double)tmpZone.latitude()) / 3600, ((double)tmpZone.longitude()) / 3600, 0);
-
-		if(!_timeZone.isValid() || (dist < distance)) {
-			distance = dist;
-			_timeZone = tmpZone;
-		}
-	}
-
-	if(_timeZone.isValid()) {
-		emit signalTimeZone(_timeZone);
-	}
 }
 

@@ -25,7 +25,6 @@
 #include <QGraphicsPixmapItem>
 #include <QDesktopWidget>
 #include <QSoftMenuBar>
-#include <QTimeZone>
 
 #include "include/nerongps.h"
 #include "include/cacheform.h"
@@ -183,13 +182,9 @@ void TNeronGPS::openClock()
 	TClockForm *clockForm = new TClockForm();
 
 	connect(&_gpsClock, SIGNAL(signalClock(QDateTime)), clockForm, SLOT(slotClock(QDateTime)));
-	connect(&_gpsClock, SIGNAL(signalTimeZone(QTimeZone)), clockForm, SLOT(slotTimeZone(QTimeZone)));
-	connect(clockForm, SIGNAL(signalSync()), &_gpsClock, SLOT(slotSync()));
 
 	clockForm->setWindowState(Qt::WindowMaximized);
 	clockForm->show();
-
-	_gpsClock.resend();
 }
 
 void TNeronGPS::openCache()

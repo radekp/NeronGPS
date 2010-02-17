@@ -22,7 +22,7 @@
 #define CLOCKFORM_H
 
 #include <QTimer>
-#include <QTimeZone>
+#include <QDateTime>
 
 #include "ui_clockform.h"
 
@@ -36,13 +36,7 @@ class TClockForm : public QWidget
 		
 	public slots:
 		void slotClock(QDateTime time);
-		void slotTimeZone(QTimeZone timeZone);
 		void slotTimer();
-		void slotSync(bool checked);
-		void slotSetTZ(bool checked);
-
-	signals:
-		void signalSync();
 
 	private:
 		Ui::ClockForm ui;
@@ -50,9 +44,6 @@ class TClockForm : public QWidget
 		QTimer _timer;
 		QDateTime _lastGPSTime;
 		QTime _lastGPSTimeValidity;
-		QTimeZone _timeZone;
-
-		QString formatTimeZone(const QTimeZone &timeZone);
 };
 
 #endif

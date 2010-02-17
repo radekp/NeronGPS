@@ -23,7 +23,6 @@
 
 #include <QTime>
 #include <QDateTime>
-#include <QtopiaServiceRequest>
 
 #include "include/clockform.h"
 
@@ -37,16 +36,9 @@ TClockForm::TClockForm(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 	ui.systemTime->setSmallDecimalPoint(true); 
 	ui.systemTime->display("--.--.--");
 
-	ui.sysTZ->setText("System: " + formatTimeZone(QTimeZone::current()));
-
 	_timer.setInterval(1000);
 	_timer.start();
 
-	ui.setTZ->setDisabled(true);
-	ui.sync->setDisabled(true);
-
-	connect(ui.sync, SIGNAL(clicked(bool)), this, SLOT(slotSync(bool)));
-	connect(ui.setTZ, SIGNAL(clicked(bool)), this, SLOT(slotSetTZ(bool)));
 	connect(&_timer, SIGNAL(timeout()), this, SLOT(slotTimer()));
 }
 
@@ -69,44 +61,7 @@ void TClockForm::slotTimer()
 
 void TClockForm::slotClock(QDateTime time)
 {
-	if(_lastGPSTimeValidity.isNull()) {
-		ui.sync->setDisabled(false);
-	}
-
 	_lastGPSTime = time;
 	_lastGPSTimeValidity.start();
-}
-
-void TClockForm::slotTimeZone(QTimeZone timeZone)
-{
-	_timeZone = timeZone;
-
-	ui.setTZ->setText("Set TZ to " + formatTimeZone(timeZone));
-	ui.setTZ->setDisabled(false);
-}
-
-void TClockForm::slotSync(bool /*checked*/)
-{
-	emit signalSync();
-}
-
-void TClockForm::slotSetTZ(bool /*checked*/)
-{
-	QDateTime time = QDateTime::currentDateTime();
-	time.setTimeSpec(Qt::LocalTime);
-
-	time = QTimeZone::current().toUtc(time);  
-	time = _timeZone.fromUtc(time);
-
-	ui.sysTZ->setText(formatTimeZone(_timeZone));
-
-	QtopiaServiceRequest req("TimeUpdate", "changeSystemTime(uint,QString)");
-	req << (uint)time.toTime_t() << _timeZone.id();
-	req.send();
-}
-
-QString TClockForm::formatTimeZone(const QTimeZone &timeZone)
-{
-	return timeZone.id();
 }
 

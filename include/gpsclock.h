@@ -24,7 +24,6 @@
 #include <QMutex>
 #include <QTimer>
 #include <QTime>
-#include <QTimeZone>
 
 #include "include/gpssample.h"
 
@@ -35,29 +34,20 @@ class TGpsClock : public QObject
 		TGpsClock();
 		~TGpsClock();
 
-		void resend();
-		const QTimeZone &timeZone() { return _timeZone; }
-
 	public slots:
 		void slotGpsSample(TGpsSample sample);
 		void slotTimer();
-		void slotSync();
 
 	signals:
 		void signalClock(QDateTime time);
-		void signalTimeZone(QTimeZone timeZone);
 
 	private:
 		QMutex _mutex;
 
 		bool _fix;
-		bool _sync;
 		QTimer _timer;
 		QDateTime _lastGpsTime;
 		QTime _time;
-		QTimeZone _timeZone;
-
-		void computeTimeZone(TGpsSample sample);
 };
 
 #endif
