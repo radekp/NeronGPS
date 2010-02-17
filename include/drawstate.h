@@ -70,7 +70,6 @@ class TDrawState : public QObject
 		bool autoOn() { return _autoOn; }
 		bool driveOn() { return _driveOn; }
 		bool driveOnTrack() { return _driveOnTrack; }
-		bool displayAlwaysOn() { return _displayAlwaysOn; }
 		const QString &httpName() { return _httpName; }
 		void getPosition(int &x, int &y);
 
@@ -109,7 +108,6 @@ class TDrawState : public QObject
 		void slotTriggerBatchLoading();
 		void slotRefresh();
 		void slotMoving(bool moving);
-		void slotDisplayAlwaysOn(bool alwaysOn);
 		void slotSwitchHttpServer(const QString &name);
 
 	signals:
@@ -145,7 +143,6 @@ class TDrawState : public QObject
 		bool _driveOn;
 		bool _driveOnTrack;
 		bool _moving;
-		bool _displayAlwaysOn;
 };
 
 #endif

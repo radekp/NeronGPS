@@ -25,6 +25,7 @@
 #include <QObject>
 #include <QMenu>
 
+#include "include/platform.h"
 #include "include/tileserver.h"
 #include "include/tilebatchloader.h"
 #include "include/mapwidget.h"
@@ -55,7 +56,7 @@ class TNeronGPS : public QObject
 	Q_OBJECT
 
 	public:
-		TNeronGPS(QWidget *mainWindow, QMenu *contextMenu, TGpsSource *gpsSource);
+		TNeronGPS(TPlatform *platform);
 		virtual ~TNeronGPS();
 
 	public slots:
@@ -73,10 +74,11 @@ class TNeronGPS : public QObject
 		void closeEvent(QCloseEvent *);
 
 	private:
+		TPlatform *_platform;
+
 		QMenu _others;
 		QStringList _keyboard;
 
-		TGpsSource *_gpsSource;
 		TGpsState _gpsState;
 		TGpsData _gpsData;
 		TGpsClock _gpsClock;

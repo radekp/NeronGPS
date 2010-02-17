@@ -28,7 +28,6 @@
 #include <QtDebug>
 #include <QGraphicsPixmapItem>
 #include <QDesktopWidget>
-#include <QSoftMenuBar>
 #include <QtopiaServiceRequest>
 
 #include "include/qtmokomain.h"
@@ -37,7 +36,7 @@
 
 TQtMokoMain::TQtMokoMain(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 {
-	setObjectName("NeronGPS");
+	QWidget::setObjectName("NeronGPS");
 	QtopiaApplication::setInputMethodHint(this, QtopiaApplication::AlwaysOff);
 	setWindowTitle(tr("NeronGPS", "application header"));
 
@@ -45,9 +44,11 @@ TQtMokoMain::TQtMokoMain(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
 //	_gpsSource = new TGpsSourceAbout(QString("/home/root/nmea_sample.txt"));
 	_gpsSource = new TGpsSourceAbout();
 
+	_displayAlwaysOn = false;
+
 	showMaximized();
 
-	_neronGPS = new TNeronGPS(this, QSoftMenuBar::menuFor(this), _gpsSource);
+	_neronGPS = new TNeronGPS(this);
 }
 
 TQtMokoMain::~TQtMokoMain()
@@ -55,4 +56,31 @@ TQtMokoMain::~TQtMokoMain()
 	delete _neronGPS;
 	delete _gpsSource;
 }
+
+void TQtMokoMain::configure(TSettings &settings, const QString &section)
+{
+	settings.beginGroup(section);
+	_displayAlwaysOn = settings.getValue("displayalwayson", false).toBool();
+	settings.endGroup();
+
+	if(_displayAlwaysOn) {
+		QtopiaApplication::setPowerConstraint(QtopiaApplication::Disable);
+	} else {
+		QtopiaApplication::setPowerConstraint(QtopiaApplication::DisableSuspend);
+	}
+}
+
+void TQtMokoMain::slotDisplayAlwaysOn(bool alwaysOn)
+{
+	_displayAlwaysOn = alwaysOn;
+
+	if(_displayAlwaysOn) {
+		QtopiaApplication::setPowerConstraint(QtopiaApplication::Disable);
+	} else {
+		QtopiaApplication::setPowerConstraint(QtopiaApplication::DisableSuspend);
+	}
+}
+
+
+
 

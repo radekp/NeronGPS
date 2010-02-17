@@ -18,38 +18,28 @@
  *
  */
 
-#ifndef QTMOKOMAIN_H
-#define QTMOKOMAIN_H
+#ifndef PLATFORM_H
+#define PLATFORM_H
 
-#include <QMainWindow>
+#include <QObject>
+#include <QWidget>
 #include <QMenu>
-#include <QSoftMenuBar>
 
-#include "include/nerongps.h"
 #include "include/gpssource.h"
-#include "include/platform.h"
+#include "include/settings.h"
 
-class TQtMokoMain : public QWidget, public TPlatform
+class TPlatform : public QObject
 {
-	Q_OBJECT
 	public:
-		TQtMokoMain(QWidget *parent = 0, Qt::WFlags f = 0);
-		virtual ~TQtMokoMain();
+		virtual void configure(TSettings &settings, const QString &section) = 0;
 
-		void configure(TSettings &settings, const QString &section);
-
-		QWidget *mainWindow() { return this; }
-		TGpsSource *gpsSource() { return _gpsSource; }
-		QMenu *menu() { return QSoftMenuBar::menuFor(this); }
-		bool displayAlwaysOn() { return _displayAlwaysOn; }
+		virtual QWidget *mainWindow() = 0;
+		virtual TGpsSource *gpsSource() = 0;
+		virtual QMenu *menu() = 0;
+		virtual bool displayAlwaysOn() = 0;
 
 	public slots:
-		void slotDisplayAlwaysOn(bool alwaysOn);
-
-	private:
-		TGpsSource *_gpsSource;
-		TNeronGPS *_neronGPS;
-		bool _displayAlwaysOn;
+		virtual void slotDisplayAlwaysOn(bool alwaysOn) = 0;
 };
 
 #endif

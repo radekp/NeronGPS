@@ -52,7 +52,6 @@ TDrawState::TDrawState()
 	_validPos = false;
 	_fix = false;
 	_moving = false;
-	_displayAlwaysOn = false;
 	_currentAngle = 0;
 	_flag = 0;
 }
@@ -71,19 +70,12 @@ void TDrawState::configure(TSettings &settings, const QString &section)
 	_zoom = settings.getValue("defaultzoom", 0).toInt() + magnification();
 	_centerX = TConverter::prepareX(settings.getValue("defaultlongitude", 5.71).toDouble());
 	_centerY = TConverter::prepareY(settings.getValue("defaultlatitude", 45.234444).toDouble());
-	_displayAlwaysOn = settings.getValue("displayalwayson", false).toBool();
 	QString httpName = settings.getValue("defaultserver", defaultServer).toString();
 	_centeringTopBorder = settings.getValue("centeringtopborder", 120).toInt();
 	_centeringBottomBorder = settings.getValue("centeringbottomborder", 50).toInt();
 	_centeringRightBorder = settings.getValue("centeringrightborder", 50).toInt();
 	_centeringLeftBorder = settings.getValue("centeringleftborder", 50).toInt();
 	settings.endGroup();
-
-	if(_displayAlwaysOn) {
-		QtopiaApplication::setPowerConstraint(QtopiaApplication::Disable);
-	} else {
-		QtopiaApplication::setPowerConstraint(QtopiaApplication::DisableSuspend);
-	}
 
 	slotSwitchHttpServer(httpName);
 }
@@ -253,17 +245,6 @@ void TDrawState::slotRefresh()
 void TDrawState::slotMoving(bool moving)
 {
 	_moving = moving;
-}
-
-void TDrawState::slotDisplayAlwaysOn(bool alwaysOn)
-{
-	_displayAlwaysOn = alwaysOn;
-
-	if(_displayAlwaysOn) {
-		QtopiaApplication::setPowerConstraint(QtopiaApplication::Disable);
-	} else {
-		QtopiaApplication::setPowerConstraint(QtopiaApplication::DisableSuspend);
-	}
 }
 
 void TDrawState::slotSwitchHttpServer(const QString &name)
