@@ -57,8 +57,8 @@ TTileL3CacheMux::~TTileL3CacheMux()
 void TTileL3CacheMux::configure(TSettings &settings, const QString &section)
 {
 	settings.beginGroup(section);
-	QString cacheDir = settings.getValue("cachedir", "/media/card/NeronGPS/maps").toString();
-	QString tempCache = settings.getValue("tempcachedir", "/media/card/NeronGPS/temp").toString();
+	QString cacheDir = settings.getValue("cachedir", settings.rootDir() + QString("/maps")).toString();
+	QString tempCache = settings.getValue("tempcachedir", settings.rootDir() + QString("/temp")).toString();
 	settings.endGroup();
 
 	_dir = cacheDir;

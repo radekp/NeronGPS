@@ -22,6 +22,7 @@
 #define PLATFORM_H
 
 #include <QMenu>
+#include <QMainWindow>
 
 #include "include/gpssource.h"
 #include "include/settings.h"
@@ -36,11 +37,13 @@ class TPlatform
 
 		TGpsSource *gpsSource() { return _gpsSource; }
 		QMenu *menu() { return _menu; }
+		const QString &rootDir() { return _rootDir; }
 		void displayAlwaysOn(bool alwaysOn);
 
 	private:
 		TGpsSource *_gpsSource;
 		QMenu *_menu;
+		QString _rootDir;
 };
 
 #endif

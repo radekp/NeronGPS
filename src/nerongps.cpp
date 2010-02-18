@@ -53,6 +53,8 @@ TNeronGPS::TNeronGPS(QWidget *parent, Qt::WFlags f) : QMainWindow(parent, f)
 	_displayAlwaysOn = false;
 	_platform.displayAlwaysOn(false);
 
+        _settings.configure(_platform.rootDir());
+
 	_server.configure(_settings, "tileserver", "caches");
 	_mapTraces.configure(_settings, "traces");
 	_recorder.configure(_settings, "recorder");

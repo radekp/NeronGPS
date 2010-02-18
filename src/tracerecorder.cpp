@@ -48,8 +48,8 @@ void TTraceRecorder::configure(TSettings &settings, const QString &section)
 {
 	settings.beginGroup(section);
 
-	_dir = settings.getValue("recorddir", "/media/card/NeronGPS/traces/records").toString();
-	_tmpDir = settings.getValue("tempdir", "/media/card/NeronGPS/traces/temp").toString();
+	_dir = settings.getValue("recorddir", settings.rootDir() + QString("/traces/records")).toString();
+	_tmpDir = settings.getValue("tempdir", settings.rootDir() + QString("/traces/temp")).toString();
 
 	bool record = settings.getValue("autorecord", "true").toBool();
 

@@ -38,6 +38,8 @@
 
 TPlatform::TPlatform()
 {
+	_rootDir = QString("/media/card/NeronGPS");
+
 //	_gpsSource = new TGpsSourceNmea(QString("/home/root/nmea_sample.txt"));
 //	_gpsSource = new TGpsSourceAbout(QString("/home/root/nmea_sample.txt"));
 	_gpsSource = new TGpsSourceAbout();

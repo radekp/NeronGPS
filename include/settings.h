@@ -30,10 +30,15 @@ class TSettings : public QSettings
 		TSettings();
 		~TSettings();
 
+		void configure(const QString &rootDir) { _rootDir = rootDir; }
+
 		QVariant getValue(const QString &key, const QVariant &defaultValue);
 		QColor getColor(const QString &key, const QString &defaultValue);
 
+		const QString &rootDir() { return _rootDir; }
+
 	private:
+		QString _rootDir;
 };
 
 #endif

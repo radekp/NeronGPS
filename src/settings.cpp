@@ -25,6 +25,7 @@
 
 TSettings::TSettings() : QSettings("NeronGPS", "NeronGPS")
 {
+        _rootDir = QString("~/NeronGPS");
 }
 
 TSettings::~TSettings()

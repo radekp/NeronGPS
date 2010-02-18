@@ -42,7 +42,7 @@ void TPoiServer::configure(TSettings &settings, const QString &section)
 {
 	settings.beginGroup(section);
 
-	_poiDirName = settings.getValue("poidir", "/media/card/NeronGPS/poi").toString();
+	_poiDirName = settings.getValue("poidir", settings.rootDir() + QString("/poi")).toString();
 	QDir::current().mkpath(_poiDirName);
 
 	_poiFileName = settings.getValue("poifile", "poilist").toString();
