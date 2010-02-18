@@ -21,25 +21,26 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-#include <QObject>
-#include <QWidget>
 #include <QMenu>
 
 #include "include/gpssource.h"
 #include "include/settings.h"
 
-class TPlatform : public QObject
+class TPlatform
 {
 	public:
-		virtual void configure(TSettings &settings, const QString &section) = 0;
+		TPlatform();
+		~TPlatform();
 
-		virtual QWidget *mainWindow() = 0;
-		virtual TGpsSource *gpsSource() = 0;
-		virtual QMenu *menu() = 0;
-		virtual bool displayAlwaysOn() = 0;
+		void configure(QMainWindow *mainWindow);
 
-	public slots:
-		virtual void slotDisplayAlwaysOn(bool alwaysOn) = 0;
+		TGpsSource *gpsSource() { return _gpsSource; }
+		QMenu *menu() { return _menu; }
+		void displayAlwaysOn(bool alwaysOn);
+
+	private:
+		TGpsSource *_gpsSource;
+		QMenu *_menu;
 };
 
 #endif

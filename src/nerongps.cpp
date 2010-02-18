@@ -24,7 +24,6 @@
 #include <QtDebug>
 #include <QGraphicsPixmapItem>
 #include <QDesktopWidget>
-#include <QSoftMenuBar>
 
 #include "include/nerongps.h"
 #include "include/cacheform.h"
@@ -42,12 +41,17 @@
 #include "include/gpssourcenmea.h"
 #include "include/clockform.h"
 
-TNeronGPS::TNeronGPS(TPlatform *platform)
+TNeronGPS::TNeronGPS(QWidget *parent, Qt::WFlags f) : QMainWindow(parent, f)
 {
 	qDebug("In TNeronGPS()");
 
-	_platform = platform;
-	_platform->configure(_settings, "platform");
+	showMaximized();
+	setObjectName("NeronGPS");
+	setWindowTitle(tr("NeronGPS", "application header"));
+
+	_platform.configure(this);
+	_displayAlwaysOn = false;
+	_platform.displayAlwaysOn(false);
 
 	_server.configure(_settings, "tileserver", "caches");
 	_mapTraces.configure(_settings, "traces");
@@ -65,7 +69,7 @@ TNeronGPS::TNeronGPS(TPlatform *platform)
 	_drawState.configure(_settings, "map");
 	_keyboard = TKeyboard::getKeyboards(_settings, "keyboard");
 
-	QMenu *contextMenu = _platform->menu();
+	QMenu *contextMenu = _platform.menu();
 
 	contextMenu->addSeparator ();
 	_others.setTitle("More...");
@@ -126,11 +130,11 @@ TNeronGPS::TNeronGPS(TPlatform *platform)
 	_batch.setServer(&_server);
 	connect(&_drawState, SIGNAL(signalBatchLoading(int, int, int, int, int)), &_batch, SLOT(slotStartBatchLoading(int, int, int, int, int)));
 
-	_actions.connectToggle("Display Always On", _platform->displayAlwaysOn(), _platform, SLOT(slotDisplayAlwaysOn(bool)));
+	_actions.connectToggle("Display Always On", false, this, SLOT(slotDisplayAlwaysOn(bool)));
 	_actions.connectToggle("Record", _recorder.isRecording(), &_recorder, SLOT(slotRecord(bool)));
 	_actions.connectToggle("Display trailer", true, &_mapTrailer, SLOT(slotEnable(bool)));
 
-	TGpsSource *gpsSource = _platform->gpsSource();
+	TGpsSource *gpsSource = _platform.gpsSource();
 	connect(gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_gpsState, SLOT(slotGpsSample(TGpsSample)));
 	connect(gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_gpsData, SLOT(slotGpsSample(TGpsSample)));
 	connect(gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_gpsClock, SLOT(slotGpsSample(TGpsSample)));
@@ -156,10 +160,12 @@ TNeronGPS::TNeronGPS(TPlatform *platform)
 	_drawList += &_mapCross;
 	_drawList += &_mapTarget;
 	_drawList += &_mapCursor;
-	_mapWidget = new TMapWidget(&_drawState, &_drawList, &_buttons, &TGlobal::messageBoard(), _platform->mainWindow());
+	_mapWidget = new TMapWidget(&_drawState, &_drawList, &_buttons, &TGlobal::messageBoard(), this);
+
+	setCentralWidget(_mapWidget);
 
 	connect(&_drawState, SIGNAL(signalUpdate()), _mapWidget, SLOT(update()));
-	_mapWidget->resize(_platform->mainWindow()->size());
+	_mapWidget->resize(this->size());
 	_mapWidget->show();
 }
 
@@ -178,6 +184,13 @@ void TNeronGPS::closeEvent(QCloseEvent *event)
 	} else {
 		event->ignore();
 	}
+}
+
+void TNeronGPS::slotDisplayAlwaysOn(bool alwaysOn)
+{
+	_displayAlwaysOn = alwaysOn;
+
+	_platform.displayAlwaysOn(alwaysOn);
 }
 
 void TNeronGPS::openClock()
@@ -224,7 +237,7 @@ void TNeronGPS::openJourney()
 	connect(journeyForm, SIGNAL(signalTrack(QString)), &_recorder, SLOT(slotNewTrack(QString)));
 	connect(journeyForm, SIGNAL(signalWayPoint(QString)), &_recorder, SLOT(slotNewWayPoint(QString)));
 	connect(&_recorder, SIGNAL(signalRecordInfo(QString, int)), journeyForm, SLOT(slotRecordInfo(QString, int)));
-	connect(_platform->gpsSource(), SIGNAL(signalUpdate(TGpsSample)), journeyForm, SLOT(slotGpsSample(TGpsSample)));
+	connect(_platform.gpsSource(), SIGNAL(signalUpdate(TGpsSample)), journeyForm, SLOT(slotGpsSample(TGpsSample)));
 
 	journeyForm->setWindowState(Qt::WindowMaximized);
 	journeyForm->show();

@@ -21,7 +21,7 @@
 #ifndef NERONGPS_H
 #define NERONGPS_H
 
-#include <QWidget>
+#include <QMainWindow>
 #include <QObject>
 #include <QMenu>
 
@@ -51,15 +51,16 @@
 #include "include/gpxloader.h"
 #include "include/tracerecorder.h"
 
-class TNeronGPS : public QObject
+class TNeronGPS : public QMainWindow
 {
 	Q_OBJECT
 
 	public:
-		TNeronGPS(TPlatform *platform);
+		TNeronGPS(QWidget *parent = 0, Qt::WFlags f = 0);
 		virtual ~TNeronGPS();
 
 	public slots:
+		void slotDisplayAlwaysOn(bool alwaysOn);
 		void openClock();
 		void openCache();
 		void openGpx();
@@ -74,7 +75,8 @@ class TNeronGPS : public QObject
 		void closeEvent(QCloseEvent *);
 
 	private:
-		TPlatform *_platform;
+		bool _displayAlwaysOn;
+		TPlatform _platform;
 
 		QMenu _others;
 		QStringList _keyboard;
