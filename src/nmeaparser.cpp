@@ -25,6 +25,7 @@
 
 TNmeaParser::TNmeaParser()
 {
+	_sampleReady = false;
 }
 
 TNmeaParser::~TNmeaParser()
