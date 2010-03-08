@@ -81,6 +81,7 @@ class TNeronGPS : public QMainWindow
 		QMenu _others;
 		QStringList _keyboard;
 
+		TGpsSource _gpsSource;
 		TGpsState _gpsState;
 		TGpsData _gpsData;
 		TGpsClock _gpsClock;

@@ -27,7 +27,7 @@
 
 #include "include/gpssource.h"
 
-class TGpsSourceAbout : public TGpsSource
+class TGpsSourceAbout : public TGpsSourcePlugin
 {
 	Q_OBJECT
 	public:
@@ -35,7 +35,12 @@ class TGpsSourceAbout : public TGpsSource
 		TGpsSourceAbout();
 		~TGpsSourceAbout();
 
+		QString name() { return QString("QWhereabouts"); }
+
 		void start();
+
+		void startRawRecording(const QString &/*filename*/) { };
+		void stopRawRecording() { };
 
 	public slots:
 		void slotUpdate(const QWhereaboutsUpdate &update);

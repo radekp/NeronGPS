@@ -23,19 +23,27 @@
 
 #include <QFile>
 #include <QDateTime>
+#include <QTimer>
+#include <QMutex>
 
-#include "include/gpssource.h"
+#include "include/gpssourceplugin.h"
 #include "include/nmeaparser.h"
 
-class TGpsSourceNmea : public TGpsSource
+class TGpsSourceNmea : public TGpsSourcePlugin
 {
 	Q_OBJECT
 	public:
-		TGpsSourceNmea(const QString &fileName);
 		TGpsSourceNmea();
 		~TGpsSourceNmea();
 
+		QString name() { return QString("nmea file"); }
+
+		void setFile(const QString &fileName);
 		void start();
+		void stop();
+
+		void startRawRecording(const QString &/*filename*/) { };
+		void stopRawRecording() { };
 
 	public slots:
 		void slotTimer();
@@ -44,6 +52,8 @@ class TGpsSourceNmea : public TGpsSource
 		void signalUpdate(TGpsSample sample);
 
 	private:
+		QMutex _mutex;
+		QTimer _timer;
 		TNmeaParser _parser;
 		QFile *_file;
 		QDateTime _lastTime;

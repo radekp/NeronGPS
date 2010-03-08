@@ -21,21 +21,27 @@
 #ifndef GPSSOURCEGPSD_H
 #define GPSSOURCEGPSD_H
 
+#include <QMutex>
 #include <QTcpSocket>
 #include <QFile>
 
-#include "include/gpssource.h"
+#include "include/gpssourceplugin.h"
 #include "include/nmeaparser.h"
 
-class TGpsSourceGpsd : public TGpsSource
+class TGpsSourceGpsd : public TGpsSourcePlugin
 {
 	Q_OBJECT
 	public:
-		TGpsSourceGpsd(const QString &logFile);
 		TGpsSourceGpsd();
 		~TGpsSourceGpsd();
 
+		QString name() { return QString("gpsd"); }
+
+		bool connect();
+
 		void start();
+		void startRawRecording(const QString &filename);
+		void stopRawRecording();
 
 	public slots:
 		void slotReadyRead();
@@ -44,7 +50,11 @@ class TGpsSourceGpsd : public TGpsSource
 		void signalUpdate(TGpsSample sample);
 
 	private:
+		QMutex _mutex;
+
 		QTcpSocket _socket;
+		bool _connected;
+
 		TNmeaParser _parser;
 		QFile *_log;
 };

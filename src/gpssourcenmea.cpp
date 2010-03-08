@@ -24,24 +24,35 @@
 
 #include "include/gpssourcenmea.h"
 
-TGpsSourceNmea::TGpsSourceNmea(const QString &fileName)
-{
-        _file = new QFile(fileName);
-        if(!_file->open(QIODevice::ReadOnly)) {
-		_file = NULL;
-		qDebug() << "Error opening file to read: " << fileName;
-	}
-}
-
 TGpsSourceNmea::TGpsSourceNmea()
 {
 	_file = NULL;
+	_timer.setSingleShot(true);
+
+	connect(&_timer, SIGNAL(timeout()), this, SLOT(slotTimer()));
 }
 
 TGpsSourceNmea::~TGpsSourceNmea()
 {
+	_timer.stop();
+
 	if(_file != NULL) {
 		delete _file;
+	}
+}
+
+void TGpsSourceNmea::setFile(const QString &fileName)
+{
+	QMutexLocker locker(&_mutex);
+
+	if(_file != NULL) {
+		delete _file;
+	}
+
+        _file = new QFile(fileName);
+        if(!_file->open(QIODevice::ReadOnly)) {
+		_file = NULL;
+		qDebug() << "Error opening file to read: " << fileName;
 	}
 }
 
@@ -57,14 +68,32 @@ void TGpsSourceNmea::start()
 	}
 }
 
+void TGpsSourceNmea::stop()
+{
+	QMutexLocker locker(&_mutex);
+
+	_timer.stop();
+
+	if(_file != NULL) {
+		delete _file;
+		_file = NULL;
+	}
+}
+
 void TGpsSourceNmea::slotTimer()
 {
+	QMutexLocker locker(&_mutex);
+
+	if(_file == NULL) {
+		return;
+	}
+
 	emit signalUpdate(_sample);
 
 	parse();
 	if(_parser.sampleReady()) {
 		_sample = _parser.retrieveSample();
-		QTimer::singleShot(interval(_lastTime, _sample.time()), this, SLOT(slotTimer()));
+		_timer.start(interval(_lastTime, _sample.time()));
 		_lastTime = _sample.time();
 	}
 }

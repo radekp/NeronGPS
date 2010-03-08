@@ -24,45 +24,71 @@
 
 #include "include/gpssourcegpsd.h"
 
-TGpsSourceGpsd::TGpsSourceGpsd(const QString &logFile)
-{
-	_log = new QFile(logFile);
-
-	if(!_log->open(QIODevice::WriteOnly)) {
-		qDebug() << "Error opening gpsd log file to write: " << logFile;
-		delete _log;
-		_log = NULL;
-	}
-}
-
 TGpsSourceGpsd::TGpsSourceGpsd()
 {
+	_connected = false;
 	_log = NULL;
 }
 
 TGpsSourceGpsd::~TGpsSourceGpsd()
 {
-	if(_log != NULL) {
-		delete _log;
+	stopRawRecording();
+}
+
+bool TGpsSourceGpsd::connect()
+{
+	_socket.connectToHost("127.0.0.1", 2947);
+
+	if(_socket.waitForConnected(10000)) {
+		_connected = true;
+		_socket.write(QByteArray("r"));
+	} else {
+		_connected = false;
 	}
+
+	return _connected;
 }
 
 void TGpsSourceGpsd::start()
 {
-	connect(&_socket, SIGNAL(readyRead()), this, SLOT(slotReadyRead()));
+	if(!_connected) {
+		connect();
+	}
 
-	_socket.connectToHost("127.0.0.1", 2947);
+	if(_connected) {
+		QObject::connect(&_socket, SIGNAL(readyRead()), this, SLOT(slotReadyRead()));
+	}
+}
 
-	if(_socket.waitForConnected(10000)) {
-		qDebug() << "Connected to gpsd";
-		_socket.write(QByteArray("r"));
-	} else {
-		qDebug() << "Connection to gpsd failed";
+void TGpsSourceGpsd::startRawRecording(const QString &filename)
+{
+	stopRawRecording();
+
+	QMutexLocker locker(&_mutex);
+
+	_log = new QFile(filename + QString(".nmea"));
+
+	if(!_log->open(QIODevice::WriteOnly)) {
+		qDebug() << "Error opening gpsd log file to write: " << filename + QString(".nmea");
+		delete _log;
+		_log = NULL;
+	}
+}
+
+void TGpsSourceGpsd::stopRawRecording()
+{
+	QMutexLocker locker(&_mutex);
+
+	if(_log != NULL) {
+		delete _log;
+		_log = NULL;
 	}
 }
 
 void TGpsSourceGpsd::slotReadyRead()
 {
+	QMutexLocker locker(&_mutex);
+
 	while(_socket.canReadLine()) {
 		QString line = QString(_socket.readLine());
 

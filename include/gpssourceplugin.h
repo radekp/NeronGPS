@@ -18,32 +18,26 @@
  *
  */
 
-#ifndef PLATFORM_H
-#define PLATFORM_H
+#ifndef GPSSOURCEPLUGIN_H
+#define GPSSOURCEPLUGIN_H
 
-#include <QMenu>
-#include <QMainWindow>
+#include <QObject>
 
-#include "include/gpssource.h"
-#include "include/settings.h"
+#include "include/gpssample.h"
 
-class TPlatform
+class TGpsSourcePlugin : public QObject
 {
+	Q_OBJECT
 	public:
-		TPlatform();
-		~TPlatform();
+		virtual QString name() = 0;
 
-		void configure(QMainWindow *mainWindow);
+		virtual void start() = 0;
 
-		TGpsSourcePlugin *gpsSource() { return _gpsSource; }
-		QMenu *menu() { return _menu; }
-		const QString &rootDir() { return _rootDir; }
-		void displayAlwaysOn(bool alwaysOn);
+		virtual void startRawRecording(const QString &filename) = 0;
+		virtual void stopRawRecording() = 0;
 
-	private:
-		TGpsSourcePlugin *_gpsSource;
-		QMenu *_menu;
-		QString _rootDir;
+	signals:
+		virtual void signalUpdate(TGpsSample sample) = 0;
 };
 
 #endif

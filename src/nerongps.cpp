@@ -38,7 +38,6 @@
 #include "include/keyboard.h"
 #include "include/converter.h"
 #include "include/gpssample.h"
-#include "include/gpssourcenmea.h"
 #include "include/clockform.h"
 
 TNeronGPS::TNeronGPS(QWidget *parent, Qt::WFlags f) : QMainWindow(parent, f)
@@ -66,11 +65,15 @@ TNeronGPS::TNeronGPS(QWidget *parent, Qt::WFlags f) : QMainWindow(parent, f)
 	_mapCursor.configure(_settings, "cursor");
 	_mapTarget.configure(_settings, "target");
 	_mapTrailer.configure(_settings, "trailer");
+	_gpsSource.configure(_settings, "gps");
 	_gpsData.configure(_settings, "gps");
 	_gpsStats.configure(_settings, "gps");
 	_drawState.configure(_settings, "map");
 	_keyboard = TKeyboard::getKeyboards(_settings, "keyboard");
 
+	if(_platform.gpsSource() != NULL) {
+		_gpsSource.addSource(_platform.gpsSource());
+	}
 	QMenu *contextMenu = _platform.menu();
 
 	contextMenu->addSeparator ();
@@ -136,17 +139,16 @@ TNeronGPS::TNeronGPS(QWidget *parent, Qt::WFlags f) : QMainWindow(parent, f)
 	_actions.connectToggle("Record", _recorder.isRecording(), &_recorder, SLOT(slotRecord(bool)));
 	_actions.connectToggle("Display trailer", true, &_mapTrailer, SLOT(slotEnable(bool)));
 
-	TGpsSource *gpsSource = _platform.gpsSource();
-	connect(gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_gpsState, SLOT(slotGpsSample(TGpsSample)));
-	connect(gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_gpsData, SLOT(slotGpsSample(TGpsSample)));
-	connect(gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_gpsClock, SLOT(slotGpsSample(TGpsSample)));
-	connect(gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_mapTrailer, SLOT(slotGpsSample(TGpsSample)));
-	connect(gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_recorder, SLOT(slotGpsSample(TGpsSample)));
-	connect(gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_gpsStats, SLOT(slotGpsSample(TGpsSample)));
+	connect(&_gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_gpsState, SLOT(slotGpsSample(TGpsSample)));
+	connect(&_gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_gpsData, SLOT(slotGpsSample(TGpsSample)));
+	connect(&_gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_gpsClock, SLOT(slotGpsSample(TGpsSample)));
+	connect(&_gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_mapTrailer, SLOT(slotGpsSample(TGpsSample)));
+	connect(&_gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_recorder, SLOT(slotGpsSample(TGpsSample)));
+	connect(&_gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_gpsStats, SLOT(slotGpsSample(TGpsSample)));
 	connect(&_gpsState, SIGNAL(signalGpsState(bool)), &_drawState, SLOT(slotGpsState(bool)));
 	connect(&_gpsState, SIGNAL(signalGpsState(bool)), &_recorder, SLOT(slotGpsState(bool)));
 	connect(&_gpsData, SIGNAL(signalGpsData(bool, int, int, qreal)), &_drawState, SLOT(slotGpsData(bool, int, int, qreal)));
-	gpsSource->start();
+	_gpsSource.start();
 
 	connect(&_mapTraces, SIGNAL(signalTraceLoaded(int, int, int, int)), &_drawState, SLOT(slotCenterTo(int, int, int, int)));
 	connect(&TGlobal::messageBoard(), SIGNAL(signalRefresh()), &_drawState, SLOT(slotRefresh()));
@@ -239,7 +241,7 @@ void TNeronGPS::openJourney()
 	connect(journeyForm, SIGNAL(signalTrack(QString)), &_recorder, SLOT(slotNewTrack(QString)));
 	connect(journeyForm, SIGNAL(signalWayPoint(QString)), &_recorder, SLOT(slotNewWayPoint(QString)));
 	connect(&_recorder, SIGNAL(signalRecordInfo(QString, int)), journeyForm, SLOT(slotRecordInfo(QString, int)));
-	connect(_platform.gpsSource(), SIGNAL(signalUpdate(TGpsSample)), journeyForm, SLOT(slotGpsSample(TGpsSample)));
+	connect(&_gpsSource, SIGNAL(signalUpdate(TGpsSample)), journeyForm, SLOT(slotGpsSample(TGpsSample)));
 
 	journeyForm->setWindowState(Qt::WindowMaximized);
 	journeyForm->show();

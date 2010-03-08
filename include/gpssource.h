@@ -21,17 +21,42 @@
 #ifndef GPSSOURCE_H
 #define GPSSOURCE_H
 
-#include <QObject>
-
 #include "include/gpssample.h"
+#include "include/gpssourceplugin.h"
+#include "include/gpssourcenmea.h"
+#include "include/gpssourcegpsd.h"
+#include "include/settings.h"
 
 class TGpsSource : public QObject
 {
+	Q_OBJECT
 	public:
-		virtual void start() = 0;
+		TGpsSource();
+		~TGpsSource();
+
+		void configure(TSettings &settings, const QString &section);
+
+		void addSource(TGpsSourcePlugin *_plugin);
+		void start();
+
+	public slots:
+		void slotRawRecording(bool start);
+		void slotNmeaPlay(const QString &filename);
+		void slotNmeaStop();
+
+	private slots:
+		void slotUpdate(TGpsSample sample);
 
 	signals:
-		virtual void signalUpdate(TGpsSample sample) = 0;
+		void signalUpdate(TGpsSample sample);
+
+	private:
+		TGpsSourceGpsd _gpsdSource;
+		TGpsSourceNmea _nmeaSource;
+		TGpsSourcePlugin *_source;
+
+		QString _rawDir;
+		bool _recording;
 };
 
 #endif
