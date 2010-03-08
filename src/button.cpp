@@ -30,8 +30,6 @@ TButton::TButton(QAction *action, const QString &drawString, int xHint, int yHin
 	_action = action;
 	_xHint = xHint;
 	_yHint = yHint;
-	_pressed = false;
-	_out = false;
 
 	_painter.configure(drawString);
 }
@@ -48,44 +46,14 @@ void TButton::setPosition(int x, int y, int width, int height)
 	_height = height;
 }
 
-bool TButton::press(int x, int y) 
+void TButton::press(int x, int y) 
 {
-	_pressed = hit(x, y);
-	_out = false;
-
-	return _pressed;
-}
-
-bool TButton::move(int x, int y) 
-{
-	bool in = hit(x, y);
-
-	if(in && _out) {
-		_pressed = true;
-		_out = false;
-	} else if(!in && _pressed) {
-		_pressed = false;
-		_out = true;
-	}
-
-	return in;
-}
-
-bool TButton::release(int x, int y) 
-{
-	bool in = hit(x, y);
-
-	if(in && _pressed) {
+	if(hit(x, y)) {
 		_action->trigger();
 	}
-
-	_pressed = false;
-	_out = false;
-	
-	return in;
 }
 
-void TButton::draw(QPainter &painter, QPen &pen, QPen &disabled, QBrush &brush, QBrush &pressed)
+void TButton::draw(QPainter &painter, QPen &pen, QPen &disabled, QBrush &brush)
 {
 	if(!_action->isVisible()) {
 		return;
@@ -94,11 +62,7 @@ void TButton::draw(QPainter &painter, QPen &pen, QPen &disabled, QBrush &brush, 
 	QPen oldPen = painter.pen();
 	QBrush oldBrush = painter.brush();
 
-	if(_pressed) {
-		painter.setBrush(pressed);
-	} else {
-		painter.setBrush(brush);
-	}
+	painter.setBrush(brush);
 
 	if(_action->isEnabled()) {
 		painter.setPen(pen);

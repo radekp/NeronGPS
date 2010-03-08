@@ -56,16 +56,26 @@ void TMapWidget::paintEvent(QPaintEvent *)
 
 void TMapWidget::mousePressEvent(QMouseEvent *event)
 {
-	if(!_buttons->press(event->x(), event->y())) {
-		_drawState->slotMoving(true);
-		_mouseX = event->x();
-		_mouseY = event->y();
-		_drawState->slotAutoOff();
-	}
+	_mouseX = event->x();
+	_mouseY = event->y();
 }
 
 void TMapWidget::mouseMoveEvent(QMouseEvent *event)
 {
+	if(!_drawState->moving()) {
+		int deltaX = _mouseX - event->x();
+		deltaX = (deltaX < 0) ? -deltaX : deltaX;
+
+		int deltaY = _mouseY - event->y();
+		deltaY = (deltaY < 0) ? -deltaY : deltaY;
+
+		int delta = (deltaX > deltaY) ? deltaX : deltaY;
+		if(delta > 20) {
+			_drawState->slotMoving(true);
+			_drawState->slotAutoOff();
+		}
+	}
+
 	if(_drawState->moving()) {
 		int offsetX = TConverter::convertBack(_mouseX - event->x(), _drawState->zoom());
 		int offsetY = TConverter::convertBack(_mouseY - event->y(), _drawState->zoom());
@@ -73,9 +83,6 @@ void TMapWidget::mouseMoveEvent(QMouseEvent *event)
 
 		_mouseX = event->x();
 		_mouseY = event->y();
-	} else {
-		_buttons->move(event->x(), event->y());
-		update();
 	}
 }
 
@@ -87,7 +94,7 @@ void TMapWidget::mouseReleaseEvent(QMouseEvent *event)
 		int offsetY = TConverter::convertBack(_mouseY - event->y(), _drawState->zoom());
 		_drawState->slotMove(offsetX, offsetY);
 	} else {
-		_buttons->release(event->x(), event->y());
+		_buttons->press(event->x(), event->y());
 		update();
 	}
 }

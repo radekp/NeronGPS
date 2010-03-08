@@ -39,9 +39,7 @@ class TButtonsBoard
 
 		void addButton(QAction *action, const QString &drawString, int xHint, int yHint);
 
-		bool press(int x, int y);
-		bool move(int x, int y);
-		bool release(int x, int y);
+		void press(int x, int y);
 		void draw(QPainter &painter, TDrawState &drawState);
 
 	private:
@@ -51,7 +49,6 @@ class TButtonsBoard
 		int _thickness;
 
 		QBrush _brush;
-		QBrush _pressedBrush;
 		QPen _pen;
 		QPen _disabledPen;
 };

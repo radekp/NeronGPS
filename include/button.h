@@ -40,11 +40,9 @@ class TButton : public QObject
 		int xHint() {return _xHint; }
 		int yHint() {return _yHint; }
 
-		bool press(int x, int y);
-		bool move(int x, int y);
-		bool release(int x, int y);
+		void press(int x, int y);
 
-		void draw(QPainter &painter, QPen &pen, QPen &disabled, QBrush &brush, QBrush &pressed);
+		void draw(QPainter &painter, QPen &pen, QPen &disabled, QBrush &brush);
 
 	private:
 		TPainter _painter;
@@ -55,8 +53,6 @@ class TButton : public QObject
 		int _y;
 		int _width;
 		int _height;
-		bool _pressed;
-		bool _out;
 
 		bool hit(int x, int y);
 };

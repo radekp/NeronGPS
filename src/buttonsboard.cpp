@@ -56,9 +56,7 @@ void TButtonsBoard::configure(TSettings &settings, const QString &section)
 	_disabledPen.setColor(settings.getColor("buttondisabledcolor", "808080c0"));
 
 	_brush.setColor(settings.getColor("buttonbackgroundcolor", "00000080"));
-	_pressedBrush.setColor(settings.getColor("buttonpressedcolor", "000000ff"));
 	_brush.setStyle(Qt::SolidPattern);
-	_pressedBrush.setStyle(Qt::SolidPattern);
 
 	settings.endGroup();
 }
@@ -68,40 +66,12 @@ void TButtonsBoard::addButton(QAction *action, const QString &drawString, int xH
 	_buttons.append(new TButton(action, drawString, xHint, yHint));
 }
 
-bool TButtonsBoard::press(int x, int y) 
+void TButtonsBoard::press(int x, int y) 
 {
-	bool hit = false;
-
 	int i;
 	for(i = 0; i < _buttons.size(); i++) {
-		hit = hit || _buttons[i]->press(x, y);
+		_buttons[i]->press(x, y);
 	}
-
-	return hit;
-}
-
-bool TButtonsBoard::move(int x, int y) 
-{
-	bool hit = false;
-
-	int i;
-	for(i = 0; i < _buttons.size(); i++) {
-		hit = hit || _buttons[i]->move(x, y);
-	}
-
-	return hit;
-}
-
-bool TButtonsBoard::release(int x, int y) 
-{
-	bool hit = false;
-
-	int i;
-	for(i = 0; i < _buttons.size(); i++) {
-		hit = hit || _buttons[i]->release(x, y);
-	}
-
-	return hit;
 }
 
 void TButtonsBoard::draw(QPainter &painter, TDrawState &drawState)
@@ -128,7 +98,7 @@ void TButtonsBoard::draw(QPainter &painter, TDrawState &drawState)
 		}
 
 		for(i = 0; i < _buttons.size(); i++) {
-			_buttons[i]->draw(painter, _pen, _disabledPen, _brush, _pressedBrush);
+			_buttons[i]->draw(painter, _pen, _disabledPen, _brush);
 		}
 	}
 }
