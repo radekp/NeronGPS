@@ -85,14 +85,14 @@ TNeronGPS::TNeronGPS(QWidget *parent, Qt::WFlags f) : QMainWindow(parent, f)
 	actionsList.append("zoom_minus/Zoom -/button/0/0/ell2(0,0,100,100)/line(25,50,75,50)");
 	actionsList.append("zoom_plus/Zoom +/button/1/0/ell2(0,0,100,100)/line(25,50,75,50)/line(50,25,50,75)");
 	actionsList.append("auto_center/Auto center/button/-1/0/ell2(0,0,100,100)/ell1(40,40,20,20)/ell1(45,45,10,10)");
-	actionsList.append("start_batch/Start batch/button/2/0/ell2(0,0,100,100)/line(25,60,75,60)/line(30,50,70,50)/line(35,40,65,40)");
-	actionsList.append("stop_batch/Stop batch/button/2/0/ell2(0,0,100,100)/line(25,25,75,75)/line(25,75,75,25)");
 	actionsList.append("server/Server/main/0");
 	actionsList.append("zoom/Zoom/main/1");
 	actionsList.append("magnification/Magnification/main/2");
 	actionsList.append("journey/Journey/main/3");
 	actionsList.append("poi/POI/main/4");
 	actionsList.append("canceldriveto/Cancel drive to/main/5");
+	actionsList.append("start_batch/Start batch/main/6");
+	actionsList.append("stop_batch/Stop batch/main/7");
 	actionsList.append("traces/Traces/more/0");
 	actionsList.append("clock/Clock/more/1");
 	actionsList.append("cache/Cache/more/2");
