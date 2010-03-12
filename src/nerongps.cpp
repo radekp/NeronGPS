@@ -48,6 +48,13 @@ TNeronGPS::TNeronGPS(QWidget *parent, Qt::WFlags f) : QMainWindow(parent, f)
 	setObjectName("NeronGPS");
 	setWindowTitle(tr("NeronGPS", "application header"));
 
+/*
+	QString title = windowTitle();
+	setWindowTitle(QLatin1String("_allow_on_top_"));
+	setWindowState(windowState() ^ Qt::WindowFullScreen);
+	setWindowTitle(title);
+*/
+
 	_platform.configure(this);
 	_displayAlwaysOn = false;
 	_platform.displayAlwaysOn(false);
@@ -59,7 +66,6 @@ TNeronGPS::TNeronGPS(QWidget *parent, Qt::WFlags f) : QMainWindow(parent, f)
 	_recorder.configure(_settings, "recorder");
 	_gpxLoader.configure(_settings, "traces");
 	_poi.configure(_settings, "poi");
-	_buttons.configure(_settings, "buttons");
 	_mapCentering.configure(_settings, "automode");
 	_mapCross.configure(_settings, "map");
 	_mapCursor.configure(_settings, "cursor");
@@ -69,64 +75,45 @@ TNeronGPS::TNeronGPS(QWidget *parent, Qt::WFlags f) : QMainWindow(parent, f)
 	_gpsData.configure(_settings, "gps");
 	_gpsStats.configure(_settings, "gps");
 	_drawState.configure(_settings, "map");
+	_actions.configure(_settings, "actions");
 	_keyboard = TKeyboard::getKeyboards(_settings, "keyboard");
 
 	if(_platform.gpsSource() != NULL) {
 		_gpsSource.addSource(_platform.gpsSource());
 	}
+
 	QMenu *contextMenu = _platform.menu();
 
-	contextMenu->addSeparator ();
 	_others.setTitle("More...");
+	_actions.populateAlternateMenu(_others);
 	contextMenu->addMenu(&_others);
+	contextMenu->addSeparator();
+	_actions.populateMainMenu(*contextMenu);
 
-	QStringList actionsList;
+	_actions.connectTrigger("minus", &_drawState, SLOT(slotZoomMinus()));
+	_actions.connectTrigger("plus", &_drawState, SLOT(slotZoomPlus()));
+	_actions.connectTrigger("center", &_drawState, SLOT(slotAutoOn()));
+	_actions.connectChange("center", &_drawState, SLOT(slotRefresh()));
+	_actions.connectTrigger("startbatch", &_drawState, SLOT(slotTriggerBatchLoading()));
+	_actions.connectChange("startbatch", &_drawState, SLOT(slotRefresh()));
+	_actions.connectTrigger("stopbatch", &_batch, SLOT(slotStopBatchLoading()));
+	_actions.connectChange("stopbatch", &_drawState, SLOT(slotRefresh()));
+	_actions.connectTrigger("canceldrive", &_drawState, SLOT(slotCancelDriveTo()));
 
-	actionsList.append("zoom_minus/Zoom -/button/0/0/ell2(0,0,100,100)/line(25,50,75,50)");
-	actionsList.append("zoom_plus/Zoom +/button/1/0/ell2(0,0,100,100)/line(25,50,75,50)/line(50,25,50,75)");
-	actionsList.append("auto_center/Auto center/button/-1/0/ell2(0,0,100,100)/ell1(40,40,20,20)/ell1(45,45,10,10)");
-	actionsList.append("server/Server/main/0");
-	actionsList.append("zoom/Zoom/main/1");
-	actionsList.append("magnification/Magnification/main/2");
-	actionsList.append("journey/Journey/main/3");
-	actionsList.append("poi/POI/main/4");
-	actionsList.append("canceldriveto/Cancel drive to/main/5");
-	actionsList.append("start_batch/Start batch/main/6");
-	actionsList.append("stop_batch/Stop batch/main/7");
-	actionsList.append("traces/Traces/more/0");
-	actionsList.append("clock/Clock/more/1");
-	actionsList.append("cache/Cache/more/2");
-	actionsList.append("user_log/User log/more/3");
-	actionsList.append("display_always_on/Display Always On/more/4");
-	actionsList.append("record/Record/more/5");
-	actionsList.append("display_trailer/Display trailer/more/6");
+	_actions.slotChangeState("center", false, false);
+	_actions.slotChangeState("startbatch", false, false);
+	_actions.slotChangeState("stopbatch", false, false);
+	_actions.slotChangeState("canceldrive", false, false);
 
-	_actions.configure(_settings, "actions", actionsList, *contextMenu, _others, _buttons);
-
-	_actions.connectTrigger("Zoom -", &_drawState, SLOT(slotZoomMinus()));
-	_actions.connectTrigger("Zoom +", &_drawState, SLOT(slotZoomPlus()));
-	_actions.connectTrigger("Auto center", &_drawState, SLOT(slotAutoOn()));
-	_actions.connectChange("Auto center", &_drawState, SLOT(slotRefresh()));
-	_actions.connectTrigger("Start batch", &_drawState, SLOT(slotTriggerBatchLoading()));
-	_actions.connectChange("Start batch", &_drawState, SLOT(slotRefresh()));
-	_actions.connectTrigger("Stop batch", &_batch, SLOT(slotStopBatchLoading()));
-	_actions.connectChange("Stop batch", &_drawState, SLOT(slotRefresh()));
-	_actions.connectTrigger("Cancel drive to", &_drawState, SLOT(slotCancelDriveTo()));
-
-	_actions.slotChangeState("Auto center", false, false);
-	_actions.slotChangeState("Start batch", false, false);
-	_actions.slotChangeState("Stop batch", false, false);
-	_actions.slotChangeState("Cancel drive to", false, false);
-
-	_actions.connectTrigger("Clock", this, SLOT(openClock()));
-	_actions.connectTrigger("Cache", this, SLOT(openCache()));
-	_actions.connectTrigger("Traces", this, SLOT(openGpx()));
-	_actions.connectTrigger("Journey", this, SLOT(openJourney()));
-	_actions.connectTrigger("User log", this, SLOT(openUserLog()));
-	_actions.connectTrigger("Server", this, SLOT(openServer()));
-	_actions.connectTrigger("Zoom", this, SLOT(openZoom()));
-	_actions.connectTrigger("Magnification", this, SLOT(openMagnification()));
-	_actions.connectTrigger("POI", this, SLOT(openPoi()));
+	_actions.connectTrigger("clock", this, SLOT(openClock()));
+	_actions.connectTrigger("caches", this, SLOT(openCache()));
+	_actions.connectTrigger("traces", this, SLOT(openGpx()));
+	_actions.connectTrigger("journey", this, SLOT(openJourney()));
+	_actions.connectTrigger("log", this, SLOT(openUserLog()));
+	_actions.connectTrigger("server", this, SLOT(openServer()));
+	_actions.connectTrigger("zoom", this, SLOT(openZoom()));
+	_actions.connectTrigger("magnification", this, SLOT(openMagnification()));
+	_actions.connectTrigger("poi", this, SLOT(openPoi()));
 
 	connect(&_drawState, SIGNAL(signalActionState(const QString &, bool, bool)), &_actions, SLOT(slotChangeState(const QString &, bool, bool)));
 	connect(&_batch, SIGNAL(signalActionState(const QString &, bool, bool)), &_actions, SLOT(slotChangeState(const QString &, bool, bool)));
@@ -135,9 +122,9 @@ TNeronGPS::TNeronGPS(QWidget *parent, Qt::WFlags f) : QMainWindow(parent, f)
 	_batch.setServer(&_server);
 	connect(&_drawState, SIGNAL(signalBatchLoading(int, int, int, int, int)), &_batch, SLOT(slotStartBatchLoading(int, int, int, int, int)));
 
-	_actions.connectToggle("Display Always On", false, this, SLOT(slotDisplayAlwaysOn(bool)));
-	_actions.connectToggle("Record", _recorder.isRecording(), &_recorder, SLOT(slotRecord(bool)));
-	_actions.connectToggle("Display trailer", true, &_mapTrailer, SLOT(slotEnable(bool)));
+	_actions.connectToggle("displayon", false, this, SLOT(slotDisplayAlwaysOn(bool)));
+	_actions.connectToggle("record", _recorder.isRecording(), &_recorder, SLOT(slotRecord(bool)));
+	_actions.connectToggle("trailer", true, &_mapTrailer, SLOT(slotEnable(bool)));
 
 	connect(&_gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_gpsState, SLOT(slotGpsSample(TGpsSample)));
 	connect(&_gpsSource, SIGNAL(signalUpdate(TGpsSample)), &_gpsData, SLOT(slotGpsSample(TGpsSample)));
@@ -164,7 +151,7 @@ TNeronGPS::TNeronGPS(QWidget *parent, Qt::WFlags f) : QMainWindow(parent, f)
 	_drawList += &_mapCross;
 	_drawList += &_mapTarget;
 	_drawList += &_mapCursor;
-	_mapWidget = new TMapWidget(&_drawState, &_drawList, &_buttons, &TGlobal::messageBoard(), this);
+	_mapWidget = new TMapWidget(&_drawState, &_drawList, &_actions, &TGlobal::messageBoard(), this);
 
 	setCentralWidget(_mapWidget);
 

@@ -21,16 +21,23 @@
 #ifndef ACTIONSMANAGER_H
 #define ACTIONSMANAGER_H
 
-#include "include/buttonsboard.h"
+#include "include/mapdrawlist.h"
+#include "include/action.h"
 
-class TActionsManager : public QObject
+class TActionsManager : public TMapDrawListElement
 {
 	Q_OBJECT 
 	public:
 		TActionsManager();
 		~TActionsManager();
 
-		void configure(TSettings &settings, const QString &section, const QStringList &actionsList, QMenu &mainMenu, QMenu &othersMenu, TButtonsBoard &board);
+		void configure(TSettings &settings, const QString &section);
+		void populateMainMenu(QMenu &menu);
+		void populateAlternateMenu(QMenu &menu);
+
+		void draw(QPainter &painter, TDrawState &drawState);
+		void press(int x, int y, int w, int h);
+
 		void connectTrigger(const QString &name, const QObject *receiver, const char *method, Qt::ConnectionType type = Qt::AutoConnection);
 		void connectChange(const QString &name, const QObject *receiver, const char *method, Qt::ConnectionType type = Qt::AutoConnection);
 		void connectToggle(const QString &name, bool state, const QObject *receiver, const char *method, Qt::ConnectionType type = Qt::AutoConnection);
@@ -39,13 +46,21 @@ class TActionsManager : public QObject
 		void slotChangeState(const QString &name, bool visible, bool enabled);
 
 	private:
-		QList<QAction *> _actions;
+		QList<TAction *> _actions;
+
+		QColor _buttonBackground;
+		QColor _buttonForeground;
+		int _buttonSize;
+
+		TAction *_topLeft;
+		TAction *_topRight;
+		TAction *_bottomLeft;
+		TAction *_bottomRight;
+
+		QList<TAction *> _mainMenu;
+		QList<TAction *> _alternateMenu;
 
 		QAction *getAction(const QString &name);
-
-		void sort(const QString &name, const QString &config, QStringList &main, QStringList &more, QStringList &button);
-		void setupMenu(QStringList &actions, QMenu &menu);
-		void setupButtons(QStringList &actions, TButtonsBoard &board);
 };
 
 #endif

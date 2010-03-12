@@ -27,72 +27,171 @@
 
 TActionsManager::TActionsManager()
 {
+	_topLeft = NULL;
+	_topRight = NULL;
+	_bottomLeft = NULL;
+	_bottomRight = NULL;
 }
 
 TActionsManager::~TActionsManager()
 {
 }
 
-void TActionsManager::configure(TSettings &settings, const QString &section, const QStringList &actionsList, QMenu &mainMenu, QMenu &othersMenu, TButtonsBoard &board)
+void TActionsManager::configure(TSettings &settings, const QString &section)
 {
 	QStringList main;
-	QStringList more;
-	QStringList button;
+	QStringList alternate;
+	QString topLeft;
+	QString topRight;
+	QString bottomLeft;
+	QString bottomRight;
+
+	main << "server" << "zoom" << "magnification" << "journey" << "poi" << "canceldrive" << "startbatch" << "stopbatch";
+	alternate << "traces" << "clock" << "caches" << "log" << "displayon" << "record" << "trailer";
 
 	settings.beginGroup(section);
 
-	int i;
-	for(i = 0; i < actionsList.size(); i++) {
-		QString setting = actionsList[i].section('/', 0, 0);
-		QString name = actionsList[i].section('/', 1, 1);
-		QString config = actionsList[i].section('/', 2, -1);
+	_buttonBackground = settings.getColor("buttonbackground", "000000ff");
+	_buttonForeground = settings.getColor("buttonforeground", "ffffffff");
+	_buttonSize = settings.getValue("buttonsize", 80).toInt();
 
-		config = settings.getValue(setting, config).toString();
-		sort(name, config, main, more, button);
-	}
+	topLeft = settings.getValue("topleft", "minus").toString();
+	topRight = settings.getValue("topright", "plus").toString();
+	bottomLeft = settings.getValue("bottomleft", "").toString();
+	bottomRight = settings.getValue("bottomright", "center").toString();
+
+	main = settings.getValue("mainmenu", main).toStringList(); 
+	alternate = settings.getValue("alternatemenu", alternate).toStringList(); 
 
 	settings.endGroup();
 
-	setupMenu(main, mainMenu);
-	setupMenu(more, othersMenu);
-	setupButtons(button, board);
+	QStringList list = main;
+
+	int i;
+	for(i = 0; i < alternate.size(); i++) {
+		if(!list.contains(alternate[i])) { list << alternate[i]; }
+	}
+
+	if(!topLeft.isEmpty() && !list.contains(topLeft)) { list << topLeft; }
+	if(!topRight.isEmpty() && !list.contains(topRight)) { list << topRight; }
+	if(!bottomLeft.isEmpty() && !list.contains(bottomLeft)) { list << bottomLeft; }
+	if(!bottomRight.isEmpty() && !list.contains(bottomRight)) { list << bottomRight; }
+
+	for(i = 0; i < list.size(); i++) {
+		TAction *action = new TAction;
+		action->configure(settings, section, list[i]);
+		_actions << action;
+	}
+	
+	for(i = 0; i < main.size(); i++) {
+		_mainMenu << _actions[list.indexOf(main[i])];
+	}
+
+	for(i = 0; i < alternate.size(); i++) {
+		_alternateMenu << _actions[list.indexOf(alternate[i])];
+	}
+
+	if(!topLeft.isEmpty()) { _topLeft = _actions[list.indexOf(topLeft)]; }
+	if(!topRight.isEmpty()) { _topRight = _actions[list.indexOf(topRight)]; }
+	if(!bottomLeft.isEmpty()) { _bottomLeft = _actions[list.indexOf(bottomLeft)]; }
+	if(!bottomRight.isEmpty()) { _bottomRight = _actions[list.indexOf(bottomRight)]; }
 }
 
-void TActionsManager::sort(const QString &name, const QString &config, QStringList &main, QStringList &more, QStringList &button)
+void TActionsManager::populateMainMenu(QMenu &menu)
 {
-	QString str1 = config.section('/', 0, 0);
-	QString str2 = config.section('/', 1, -1) + '/' + name;
-
-	if(str1 == "main") {
-		main.append(str2);
-	} else if(str1 == "more") {
-		more.append(str2);
-	} else if(str1 == "button") {
-		button.append(str2);
-	} else if(str1 != "none") {
-		qDebug() << "Error, unknown action type: " << str1;
+	int i;
+	for(i = 0; i < _mainMenu.size(); i++) {
+		menu.addAction(_mainMenu[i]);
 	}
 }
 
-void TActionsManager::setupMenu(QStringList &actions, QMenu &menu)
+void TActionsManager::populateAlternateMenu(QMenu &menu)
 {
-	actions.sort();
-
 	int i;
-	for(i = 0; i < actions.size(); i++) {
-		QAction *action = new QAction(actions[i].section('/', -1, -1), this);
-		menu.addAction(action);
-		_actions.append(action);
+	for(i = 0; i < _alternateMenu.size(); i++) {
+		menu.addAction(_alternateMenu[i]);
 	}
 }
 
-void TActionsManager::setupButtons(QStringList &actions, TButtonsBoard &board)
+void TActionsManager::draw(QPainter &painter, TDrawState &drawState)
 {
-	int i;
-	for(i = 0; i < actions.size(); i++) {
-		QAction *action = new QAction(actions[i].section('/', -1, -1), this);
-		board.addButton(action, actions[i].section('/', 2, -2), (actions[i].section('/', 0, 0)).toInt(), (actions[i].section('/', 1, 1)).toInt());
-		_actions.append(action);
+	int x = drawState.width();
+	int y = drawState.height();
+
+	QPen oldPen = painter.pen();
+	QBrush oldBrush = painter.brush();
+
+	if((_topLeft != NULL) && (_topLeft->isVisible())) {
+		painter.setBrush(QBrush(_buttonBackground));
+		painter.setPen(QPen(_buttonBackground));
+		QPolygon polygon;
+		polygon << QPoint(0, 0) << QPoint(_buttonSize, 0)  << QPoint(0, _buttonSize);
+		painter.drawPolygon(polygon);		
+		painter.setBrush(QBrush(_buttonForeground));
+		painter.setPen(QPen(_buttonForeground));
+		_topLeft->draw(painter, 0, 0, _buttonSize / 2, _buttonSize / 2);
+		painter.drawLine(_buttonSize, 0, 0, _buttonSize);
+	}
+
+	if((_topRight != NULL) && (_topRight->isVisible())) {
+		painter.setBrush(QBrush(_buttonBackground));
+		painter.setPen(QPen(_buttonBackground));
+		QPolygon polygon;
+		polygon << QPoint(x, 0) << QPoint(x - _buttonSize, 0)  << QPoint(x, _buttonSize);
+		painter.drawPolygon(polygon);		
+		painter.setBrush(QBrush(_buttonForeground));
+		painter.setPen(QPen(_buttonForeground));
+		_topRight->draw(painter, x - (_buttonSize / 2), 0, _buttonSize / 2, _buttonSize / 2);
+		painter.drawLine(x - _buttonSize, 0, x, _buttonSize);
+	}
+
+	if((_bottomLeft != NULL) && (_bottomLeft->isVisible())) {
+		painter.setBrush(QBrush(_buttonBackground));
+		painter.setPen(QPen(_buttonBackground));
+		QPolygon polygon;
+		polygon << QPoint(0, y) << QPoint(_buttonSize, y)  << QPoint(0, y - _buttonSize);
+		painter.drawPolygon(polygon);		
+		painter.setBrush(QBrush(_buttonForeground));
+		painter.setPen(QPen(_buttonForeground));
+		_bottomLeft->draw(painter, 0, y - (_buttonSize / 2), _buttonSize / 2, _buttonSize / 2);
+		painter.drawLine(_buttonSize, y, 0, y - _buttonSize);
+	}
+
+	if((_bottomRight != NULL) && (_bottomRight->isVisible())) {
+		painter.setBrush(QBrush(_buttonBackground));
+		painter.setPen(QPen(_buttonBackground));
+		QPolygon polygon;
+		polygon << QPoint(x, y) << QPoint(x - _buttonSize, y)  << QPoint(x, y - _buttonSize);
+		painter.drawPolygon(polygon);		
+		painter.setBrush(QBrush(_buttonForeground));
+		painter.setPen(QPen(_buttonForeground));
+		_bottomRight->draw(painter, x - (_buttonSize / 2), y - (_buttonSize / 2), _buttonSize / 2, _buttonSize / 2);
+		painter.drawLine(x - _buttonSize, y, x, y - _buttonSize);
+	}
+
+	painter.setBrush(oldBrush);
+	painter.setPen(oldPen);
+}
+
+void TActionsManager::press(int x, int y, int w, int h)
+{
+	int midX = w / 2;
+	int midY = h / 2;
+
+	if((x < midX) && (y < midY) && (_topLeft != NULL) && (_topLeft->isVisible()) && (_topLeft->isEnabled())) {
+		_topLeft->trigger();
+	}
+
+	if((x >= midX) && (y < midY) && (_topRight != NULL) && (_topRight->isVisible()) && (_topRight->isEnabled())) {
+		_topRight->trigger();
+	}
+
+	if((x < midX) && (y >= midY) && (_bottomLeft != NULL) && (_bottomLeft->isVisible()) && (_bottomLeft->isEnabled())) {
+		_bottomLeft->trigger();
+	}
+
+	if((x >= midX) && (y >= midY) && (_bottomRight != NULL) && (_bottomRight->isVisible()) && (_bottomRight->isEnabled())) {
+		_bottomRight->trigger();
 	}
 }
 
@@ -148,7 +247,7 @@ QAction *TActionsManager::getAction(const QString &name)
 	QAction *ret;
 
 	int i;
-	for(i = 0; (i < _actions.size()) && (_actions[i]->text() != name); i++);
+	for(i = 0; (i < _actions.size()) && (_actions[i]->name() != name); i++);
 
 	if(i == _actions.size()) {
 		ret = NULL;

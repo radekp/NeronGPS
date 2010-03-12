@@ -67,7 +67,7 @@ void TDrawState::configure(TSettings &settings, const QString &section)
 	settings.beginGroup(section);
 	_magnification = settings.getValue("magnification", 1).toInt();
 	_dontMagnificate = settings.getValue("nomagnification", "").toStringList();
-	_zoom = settings.getValue("defaultzoom", 0).toInt() + magnification();
+	_zoom = settings.getValue("defaultzoom", 1).toInt() + magnification();
 	_centerX = TConverter::prepareX(settings.getValue("defaultlongitude", 5.71).toDouble());
 	_centerY = TConverter::prepareY(settings.getValue("defaultlatitude", 45.234444).toDouble());
 	QString httpName = settings.getValue("defaultserver", defaultServer).toString();
@@ -166,7 +166,7 @@ void TDrawState::slotDriveTo(int x, int y)
 
 	_flag |= DRAWSTATE_FLAG_DRIVETO_TURNED_ON;
 
-	emit signalActionState("Cancel drive to", true, true);
+	emit signalActionState("canceldrive", true, true);
 	slotAutoOn();
 }
 
@@ -174,7 +174,7 @@ void TDrawState::slotCancelDriveTo()
 {
 	_driveOn = false;
 
-	emit signalActionState("Cancel drive to", false, false);
+	emit signalActionState("canceldrive", false, false);
 	emit signalUpdate();
 }
 
@@ -182,7 +182,7 @@ void TDrawState::slotAutoOn()
 {
 	_autoOn = true;
 	_flag |= DRAWSTATE_FLAG_AUTO_TURNED_ON;
-	emit signalActionState("Auto center", false, false);
+	emit signalActionState("center", false, false);
 	emit signalUpdate();
 }
 
@@ -190,7 +190,7 @@ void TDrawState::slotAutoOff()
 {
 	_autoOn = false;
 	_flag |= DRAWSTATE_FLAG_AUTO_TURNED_OFF;
-	emit signalActionState("Auto center", true, true);
+	emit signalActionState("center", true, true);
 	emit signalUpdate();
 }
 

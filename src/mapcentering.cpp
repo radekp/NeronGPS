@@ -40,7 +40,7 @@ void TMapCentering::configure(TSettings &settings, const QString &section)
 	_zoomMax = settings.getValue("maxautozoom", 18).toInt();
 	_elasticityStartZoom = settings.getValue("elasticitystartzoom", 12).toInt();
 	_elasticitySpeed = settings.getValue("elasticityspeed", 10).toInt();
-	_elasticityTopBorder = settings.getValue("elasticitytopborder", 130).toInt();
+	_elasticityTopBorder = settings.getValue("elasticitytopborder", 80).toInt();
 	_elasticityBottomBorder = settings.getValue("elasticitybottomborder", 80).toInt();
 	_elasticityRightBorder = settings.getValue("elasticityrightborder", 80).toInt();
 	_elasticityLeftBorder = settings.getValue("elasticityleftborder", 80).toInt();

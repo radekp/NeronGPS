@@ -34,7 +34,6 @@
 #include "include/gpsclock.h"
 #include "include/poiserver.h"
 #include "include/actionsmanager.h"
-#include "include/buttonsboard.h"
 #include "include/messageboard.h"
 #include "include/drawstate.h"
 #include "include/mapdrawlist.h"
@@ -101,7 +100,6 @@ class TNeronGPS : public QMainWindow
 		TMapTrailer _mapTrailer;
 		TMapTraces _mapTraces;
 		TActionsManager _actions;
-		TButtonsBoard _buttons;
 		TPoiServer _poi;
 		TGpxLoader _gpxLoader;
 		TTraceRecorder _recorder;

@@ -146,10 +146,10 @@ void TTileBatchLoader::slotNewLoadingCache(QString cache, int beginZoom, int end
 {
 	if(cache != "") {
 		if(!isRunning()) {
-			emit signalActionState("Start batch", true, true);
+			emit signalActionState("startbatch", true, true);
 		}
 	} else {
-		emit signalActionState("Start batch", false, false);
+		emit signalActionState("startbatch", false, false);
 	}
 
 	_nextCache = cache;
@@ -162,8 +162,8 @@ void TTileBatchLoader::slotNewLoadingCache(QString cache, int beginZoom, int end
 void TTileBatchLoader::slotStartBatchLoading(int x, int y, int w, int h, int zStart)
 {
 	if((_nextCache != "") && (_tileServer != NULL) && (!isRunning())) {
-		emit signalActionState("Start batch", false, false);
-		emit signalActionState("Stop batch", true, true);
+		emit signalActionState("startbatch", false, false);
+		emit signalActionState("stopbatch", true, true);
 
 		_x = x;
 		_y = y;
@@ -191,7 +191,7 @@ void TTileBatchLoader::slotStartBatchLoading(int x, int y, int w, int h, int zSt
 void TTileBatchLoader::slotStopBatchLoading()
 {
 	if(isRunning()) {
-		emit signalActionState("Stop batch", true, false);
+		emit signalActionState("stopbatch", true, false);
 	}
 
 	stop();
@@ -199,10 +199,10 @@ void TTileBatchLoader::slotStopBatchLoading()
 
 void TTileBatchLoader::slotBatchLoadingFinished()
 {
-	emit signalActionState("Stop batch", false, false);
+	emit signalActionState("stopbatch", false, false);
 
 	if(_cache != "") {
-		emit signalActionState("Start batch", true, true);
+		emit signalActionState("startbatch", true, true);
 	}
 
 	tMessage((void *)this) << "";

@@ -18,43 +18,32 @@
  *
  */
 
-#ifndef BUTTON_H
-#define BUTTON_H
+#ifndef ACTION_H
+#define ACTION_H
 
 #include <QObject>
 #include <QPainter>
 #include <QAction>
-#include <QColor>
 
+#include "include/settings.h"
 #include "include/painter.h"
 
-class TButton : public QObject
+class TAction : public QAction
 {
 	Q_OBJECT
 	public:
-		TButton(QAction *action, const QString &drawString, int xHint, int yHint);
-		~TButton();
+		TAction();
+		~TAction();
 
-		void setPosition(int x, int y, int width, int height);
+		void configure(TSettings &settings, const QString &section, const QString &name);
+		void draw(QPainter &painter, int x, int y, int w, int h);
 
-		int xHint() {return _xHint; }
-		int yHint() {return _yHint; }
-
-		void press(int x, int y);
-
-		void draw(QPainter &painter, QPen &pen, QPen &disabled, QBrush &brush);
+		const QString &name() { return _name; }
 
 	private:
+		QString _name;
 		TPainter _painter;
-		QAction *_action;
-		int _xHint;
-		int _yHint;
-		int _x;
-		int _y;
-		int _width;
-		int _height;
-
-		bool hit(int x, int y);
+		bool _configured;
 };
 
 #endif

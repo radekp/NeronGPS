@@ -28,7 +28,7 @@
 #include "include/tile.h"
 #include "include/converter.h"
 
-TMapWidget::TMapWidget(TDrawState *drawState, TMapDrawList *drawList, TButtonsBoard *buttons, TMessageBoard *messages, QWidget *parent) : QWidget(parent)
+TMapWidget::TMapWidget(TDrawState *drawState, TMapDrawList *drawList, TActionsManager *buttons, TMessageBoard *messages, QWidget *parent) : QWidget(parent)
 {
 	setBackgroundRole(QPalette::Base);
 	setAutoFillBackground(true);
@@ -94,7 +94,7 @@ void TMapWidget::mouseReleaseEvent(QMouseEvent *event)
 		int offsetY = TConverter::convertBack(_mouseY - event->y(), _drawState->zoom());
 		_drawState->slotMove(offsetX, offsetY);
 	} else {
-		_buttons->press(event->x(), event->y());
+		_buttons->press(event->x(), event->y(), width(), height());
 		update();
 	}
 }

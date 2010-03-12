@@ -25,7 +25,7 @@
 #include <QWidget>
 #include <QList>
 
-#include "include/buttonsboard.h"
+#include "include/actionsmanager.h"
 #include "include/messageboard.h"
 #include "include/drawstate.h"
 #include "include/mapdrawlist.h"
@@ -35,7 +35,7 @@ class TMapWidget : public QWidget
 	Q_OBJECT
 
 	public:
-		TMapWidget(TDrawState *drawState, TMapDrawList *drawList, TButtonsBoard *buttons, TMessageBoard *messages, QWidget *parent = 0);
+		TMapWidget(TDrawState *drawState, TMapDrawList *drawList, TActionsManager *buttons, TMessageBoard *messages, QWidget *parent = 0);
 		
 	protected:
 		void paintEvent(QPaintEvent *event);
@@ -46,7 +46,7 @@ class TMapWidget : public QWidget
 	private:
 		TDrawState *_drawState;
 		TMapDrawList *_drawList;
-		TButtonsBoard *_buttons;
+		TActionsManager *_buttons;
 		TMessageBoard *_messages;
 
 		int _mouseX;
