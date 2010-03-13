@@ -57,7 +57,7 @@ void TActionsManager::configure(TSettings &settings, const QString &section)
 
 	topLeft = settings.getValue("topleft", "minus").toString();
 	topRight = settings.getValue("topright", "plus").toString();
-	bottomLeft = settings.getValue("bottomleft", "").toString();
+	bottomLeft = settings.getValue("bottomleft", "fullscreen").toString();
 	bottomRight = settings.getValue("bottomright", "center").toString();
 
 	main = settings.getValue("mainmenu", main).toStringList(); 
@@ -121,7 +121,7 @@ void TActionsManager::draw(QPainter &painter, TDrawState &drawState)
 	QPen oldPen = painter.pen();
 	QBrush oldBrush = painter.brush();
 
-	if((_topLeft != NULL) && (_topLeft->isVisible())) {
+	if((_topLeft != NULL) && (_topLeft->isVisible()) && !_topLeft->noDisplay()) {
 		painter.setBrush(QBrush(_buttonBackground));
 		painter.setPen(QPen(_buttonBackground));
 		QPolygon polygon;
@@ -133,7 +133,7 @@ void TActionsManager::draw(QPainter &painter, TDrawState &drawState)
 		painter.drawLine(_buttonSize, 0, 0, _buttonSize);
 	}
 
-	if((_topRight != NULL) && (_topRight->isVisible())) {
+	if((_topRight != NULL) && (_topRight->isVisible()) && !_topRight->noDisplay()) {
 		painter.setBrush(QBrush(_buttonBackground));
 		painter.setPen(QPen(_buttonBackground));
 		QPolygon polygon;
@@ -145,7 +145,7 @@ void TActionsManager::draw(QPainter &painter, TDrawState &drawState)
 		painter.drawLine(x - _buttonSize, 0, x, _buttonSize);
 	}
 
-	if((_bottomLeft != NULL) && (_bottomLeft->isVisible())) {
+	if((_bottomLeft != NULL) && (_bottomLeft->isVisible()) && !_bottomLeft->noDisplay()) {
 		painter.setBrush(QBrush(_buttonBackground));
 		painter.setPen(QPen(_buttonBackground));
 		QPolygon polygon;
@@ -157,7 +157,7 @@ void TActionsManager::draw(QPainter &painter, TDrawState &drawState)
 		painter.drawLine(_buttonSize, y, 0, y - _buttonSize);
 	}
 
-	if((_bottomRight != NULL) && (_bottomRight->isVisible())) {
+	if((_bottomRight != NULL) && (_bottomRight->isVisible()) && !_bottomRight->noDisplay()) {
 		painter.setBrush(QBrush(_buttonBackground));
 		painter.setPen(QPen(_buttonBackground));
 		QPolygon polygon;

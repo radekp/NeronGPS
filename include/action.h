@@ -39,10 +39,12 @@ class TAction : public QAction
 		void draw(QPainter &painter, int x, int y, int w, int h);
 
 		const QString &name() { return _name; }
+		bool noDisplay() { return _noDisplay; }
 
 	private:
 		QString _name;
 		TPainter _painter;
+		bool _noDisplay;
 		bool _configured;
 };
 

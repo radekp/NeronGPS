@@ -48,12 +48,7 @@ TNeronGPS::TNeronGPS(QWidget *parent, Qt::WFlags f) : QMainWindow(parent, f)
 	setObjectName("NeronGPS");
 	setWindowTitle(tr("NeronGPS", "application header"));
 
-/*
-	QString title = windowTitle();
-	setWindowTitle(QLatin1String("_allow_on_top_"));
-	setWindowState(windowState() ^ Qt::WindowFullScreen);
-	setWindowTitle(title);
-*/
+	_isFullScreen = false;
 
 	_platform.configure(this);
 	_displayAlwaysOn = false;
@@ -94,6 +89,7 @@ TNeronGPS::TNeronGPS(QWidget *parent, Qt::WFlags f) : QMainWindow(parent, f)
 	_actions.connectTrigger("plus", &_drawState, SLOT(slotZoomPlus()));
 	_actions.connectTrigger("center", &_drawState, SLOT(slotAutoOn()));
 	_actions.connectChange("center", &_drawState, SLOT(slotRefresh()));
+	_actions.connectTrigger("fullscreen", this, SLOT(slotFullScreen()));
 	_actions.connectTrigger("startbatch", &_drawState, SLOT(slotTriggerBatchLoading()));
 	_actions.connectChange("startbatch", &_drawState, SLOT(slotRefresh()));
 	_actions.connectTrigger("stopbatch", &_batch, SLOT(slotStopBatchLoading()));
@@ -167,6 +163,24 @@ TNeronGPS::~TNeronGPS()
 	qDebug("In ~TNeronGPS()");
 }
 
+bool TNeronGPS::event(QEvent *event)
+{
+	if(_isFullScreen) {
+		if(event->type() == QEvent::WindowDeactivate)
+		{
+			lower();
+		} else if(event->type() == QEvent::WindowActivate) {
+			QString title = windowTitle();
+			setWindowTitle( QLatin1String( "_allow_on_top_" ) );
+			raise();
+			setWindowTitle( title );
+		}
+	}
+
+	return QWidget::event(event);
+}
+
+
 void TNeronGPS::closeEvent(QCloseEvent *event)
 {
 	QMessageBox dialog(QMessageBox::Question, "Closing", "Exit?", QMessageBox::Yes | QMessageBox::No);
@@ -174,6 +188,19 @@ void TNeronGPS::closeEvent(QCloseEvent *event)
 		event->accept();
 	} else {
 		event->ignore();
+	}
+}
+
+void TNeronGPS::slotFullScreen()
+{
+	if(_isFullScreen) {
+		_isFullScreen = false;
+		showMaximized();
+	} else {
+		_isFullScreen = true;
+		setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
+		setWindowState(Qt::WindowFullScreen);
+		raise();
 	}
 }
 

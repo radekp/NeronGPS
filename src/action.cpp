@@ -26,6 +26,7 @@
 
 TAction::TAction() : QAction(NULL)
 {
+	_noDisplay = true;
 }
 
 TAction::~TAction()
@@ -40,12 +41,17 @@ void TAction::configure(TSettings &settings, const QString &section, const QStri
 	if(name == QString("minus")) {
 		displayName = QString("Zoom -");
 		paintString = QString("line(25,50,75,50)");
+		_noDisplay = false;
 	} else if(name == QString("plus")) {
 		displayName = QString("Zoom +");
 		paintString = QString("line(25,50,75,50)/line(50,25,50,75)");
+		_noDisplay = false;
 	} else if(name == QString("center")) {
 		displayName = QString("Auto center");
 		paintString = QString("ell1(30,30,40,40)");
+		_noDisplay = false;
+	} else if(name == QString("fullscreen")) {
+		displayName = QString("Fullscreen");
 	} else if(name == QString("server")) {
 		displayName = QString("Map server");
 	} else if(name == QString("zoom")) {

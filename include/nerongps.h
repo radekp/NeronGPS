@@ -60,6 +60,7 @@ class TNeronGPS : public QMainWindow
 
 	public slots:
 		void slotDisplayAlwaysOn(bool alwaysOn);
+		void slotFullScreen();
 		void openClock();
 		void openCache();
 		void openGpx();
@@ -71,11 +72,13 @@ class TNeronGPS : public QMainWindow
 		void openPoi();
 
 	protected:
+		bool event(QEvent *event);
 		void closeEvent(QCloseEvent *);
 
 	private:
 		bool _displayAlwaysOn;
 		TPlatform _platform;
+		bool _isFullScreen;
 
 		QMenu _others;
 		QStringList _keyboard;
