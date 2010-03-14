@@ -58,6 +58,7 @@ void TMapWidget::mousePressEvent(QMouseEvent *event)
 {
 	_mouseX = event->x();
 	_mouseY = event->y();
+	_time.start();
 }
 
 void TMapWidget::mouseMoveEvent(QMouseEvent *event)
@@ -70,7 +71,7 @@ void TMapWidget::mouseMoveEvent(QMouseEvent *event)
 		deltaY = (deltaY < 0) ? -deltaY : deltaY;
 
 		int delta = (deltaX > deltaY) ? deltaX : deltaY;
-		if(delta > 20) {
+		if((delta > 30) && (_time.elapsed() > 300)) {
 			_drawState->slotMoving(true);
 			_drawState->slotAutoOff();
 		}

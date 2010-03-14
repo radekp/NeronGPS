@@ -24,6 +24,7 @@
 #include <QObject>
 #include <QWidget>
 #include <QList>
+#include <QTime>
 
 #include "include/actionsmanager.h"
 #include "include/messageboard.h"
@@ -49,6 +50,7 @@ class TMapWidget : public QWidget
 		TActionsManager *_buttons;
 		TMessageBoard *_messages;
 
+		QTime _time;
 		int _mouseX;
 		int _mouseY;
 };
