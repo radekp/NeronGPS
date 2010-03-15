@@ -24,8 +24,10 @@
 #include <QMainWindow>
 #include <QObject>
 #include <QMenu>
+#include <QStackedWidget>
 
 #include "include/platform.h"
+#include "include/fullscreen.h"
 #include "include/tileserver.h"
 #include "include/tilebatchloader.h"
 #include "include/mapwidget.h"
@@ -61,6 +63,7 @@ class TNeronGPS : public QMainWindow
 	public slots:
 		void slotDisplayAlwaysOn(bool alwaysOn);
 		void slotFullScreen();
+		void slotDestroyWidget(QObject *obj);
 		void openClock();
 		void openCache();
 		void openGpx();
@@ -72,14 +75,15 @@ class TNeronGPS : public QMainWindow
 		void openPoi();
 
 	protected:
-		bool event(QEvent *event);
 		void closeEvent(QCloseEvent *);
 
 	private:
 		bool _displayAlwaysOn;
 		TPlatform _platform;
-		bool _isFullScreen;
+		TFullScreen *_fullScreen;
+		QStackedWidget *_fullScreenWidget;
 
+		QStackedWidget _stack;
 		QMenu _others;
 		QStringList _keyboard;
 
@@ -108,6 +112,8 @@ class TNeronGPS : public QMainWindow
 		TTraceRecorder _recorder;
 
 		TMapWidget *_mapWidget;
+
+		void displayForm(QWidget *form);
 };
 
 #endif
