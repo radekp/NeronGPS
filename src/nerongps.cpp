@@ -192,9 +192,7 @@ void TNeronGPS::slotFullScreen()
 		_stack.removeWidget(_mapWidget);
 		_fullScreenWidget->addWidget(_mapWidget);
 
-		_fullScreen->setWindowFlags(_fullScreen->windowFlags() | Qt::WindowStaysOnTopHint);
 		_fullScreen->setWindowState(Qt::WindowFullScreen);
-		_fullScreen->raise();
 	} else {
 		_fullScreenWidget->removeWidget(_mapWidget);
 		_stack.addWidget(_mapWidget);

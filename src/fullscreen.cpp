@@ -23,8 +23,9 @@
 
 #include "include/fullscreen.h"
 
-TFullScreen::TFullScreen(QWidget *parent) : QMainWindow(parent)
+TFullScreen::TFullScreen(QWidget *parent) : QMainWindow(parent, Qt::WindowStaysOnTopHint)
 {
+	setWindowTitle(QLatin1String( "_allow_on_top_" ));
 }
 
 bool TFullScreen::event(QEvent *event)
@@ -33,10 +34,7 @@ bool TFullScreen::event(QEvent *event)
 	{
 		lower();
 	} else if(event->type() == QEvent::WindowActivate) {
-		QString title = windowTitle();
-		setWindowTitle( QLatin1String( "_allow_on_top_" ) );
 		raise();
-		setWindowTitle( title );
 	}
 
 	return QWidget::event(event);
