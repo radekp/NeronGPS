@@ -21,22 +21,17 @@
 #ifndef GPSSAMPLE_H
 #define GPSSAMPLE_H
 
-#include <QMutex>
 #include <QDateTime>
 
-class TGpsSampleShared
+#include "include/object.h"
+
+class TGpsSampleData : public TObjectData
 {
 	public:
-		TGpsSampleShared() { _count = 1; _altitudeValid = false; _speedValid = false; }
-		~TGpsSampleShared() { }
-
-		void get() { QMutexLocker locker(&_mutex); _count++; }
-		bool release() { QMutexLocker locker(&_mutex); _count--; return _count == 0; }
+		TGpsSampleData() : TObjectData(OBJECT_TYPE_GPSSAMPLE) { _altitudeValid = false; _speedValid = false; }
+		~TGpsSampleData() { }
 
 	public:
-		QMutex _mutex;
-		int _count;
-
 		QDateTime _time;
 		double _latitude;
 		double _longitude;
@@ -47,36 +42,27 @@ class TGpsSampleShared
 		float _speed;
 };
 
-class TGpsSample
+class TGpsSample : public TObject
 {
 	public:
 		TGpsSample(const QDateTime &time, double latitude, double longitude);
-		TGpsSample(const TGpsSample &sample);
-		TGpsSample();
-		~TGpsSample();
+		TGpsSample(const TGpsSample &sample) : TObject(sample, OBJECT_TYPE_GPSSAMPLE) { }
+		TGpsSample() : TObject(OBJECT_TYPE_GPSSAMPLE) { }
+		~TGpsSample() { }
 
-		void setAltitude(float altitude) { _data->_altitudeValid = true; _data->_altitude = altitude; }
-		void setSpeed(float speed) { _data->_speedValid = true; _data->_speed = speed; }
+		TObjectData *createData(TObjectData *data);
+		TObjectData *createData();
 
-		bool isValid() const { return _data != NULL; }
+		void setAltitude(float altitude);
+		void setSpeed(float speed);
 
-		double latitude() const { return _data->_latitude; }
-		double longitude() const { return _data->_longitude; }
-		QDateTime time() const { return _data->_time; }
-		bool altitudeValid() const { return _data->_altitudeValid; }
-		float altitude() const { return _data->_altitude; }
-		bool speedValid() const { return _data->_speedValid; }
-		float speed() const { return _data->_speed; }
-
-		TGpsSample &operator= (const TGpsSample &sample);
-
-	protected:
-		TGpsSampleShared *data() const { if(_data != NULL) _data->get(); return _data; }
-
-	private:
-		TGpsSampleShared *_data;
-
-		void release();
+		double latitude() const { return ((TGpsSampleData *)_data)->_latitude; }
+		double longitude() const { return ((TGpsSampleData *)_data)->_longitude; }
+		QDateTime time() const { return ((TGpsSampleData *)_data)->_time; }
+		bool altitudeValid() const { return ((TGpsSampleData *)_data)->_altitudeValid; }
+		float altitude() const { return ((TGpsSampleData *)_data)->_altitude; }
+		bool speedValid() const { return ((TGpsSampleData *)_data)->_speedValid; }
+		float speed() const { return ((TGpsSampleData *)_data)->_speed; }
 };
 
 #endif

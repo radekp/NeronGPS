@@ -23,46 +23,56 @@
 
 #include "include/gpssample.h"
 
-TGpsSample::TGpsSample(const QDateTime &time, double latitude, double longitude)
+TGpsSample::TGpsSample(const QDateTime &time, double latitude, double longitude) : TObject(OBJECT_TYPE_GPSSAMPLE)
 {
-	_data = new TGpsSampleShared;
+	TObject::modify();	
+
+	TGpsSampleData *data = (TGpsSampleData *)_data;
+
+	data->_time = time;
+	data->_longitude = longitude;
+	data->_latitude = latitude;
+}
+
+TObjectData *TGpsSample::createData()
+{
+	return new TGpsSampleData;
+}
+
+TObjectData *TGpsSample::createData(TObjectData *data)
+{
+	TGpsSampleData *data1 = (TGpsSampleData *)data;
+	TGpsSampleData *data2 = new TGpsSampleData;
+
+
+	data2->_time = data1->_time;
+	data2->_latitude = data1->_latitude;
+	data2->_longitude = data1->_longitude;
+	data2->_altitudeValid = data1->_altitudeValid;
+	data2->_altitude = data1->_altitude;
+	data2->_speedValid = data1->_speedValid;
+	data2->_speed = data1->_speed;
 	
-	_data->_time = time;
-	_data->_longitude = longitude;
-	_data->_latitude = latitude;
+	return data2;
 }
 
-TGpsSample::TGpsSample(const TGpsSample &sample)
+void TGpsSample::setAltitude(float altitude)
 {
-	_data = sample.data();
+	modify();
+
+	TGpsSampleData *data = (TGpsSampleData *)_data;
+
+	data->_altitudeValid = true;
+	data->_altitude = altitude;
 }
 
-TGpsSample::TGpsSample()
+void TGpsSample::setSpeed(float speed)
 {
-	_data = NULL;
+	modify();
+
+	TGpsSampleData *data = (TGpsSampleData *)_data;
+
+	data->_speedValid = true;
+	data->_speed = speed;
 }
-
-TGpsSample::~TGpsSample()
-{
-	release();
-}
-
-TGpsSample &TGpsSample::operator= (const TGpsSample &sample)
-{
-	release();
-
-	_data = sample.data();
-
-	return *this;
-}
-
-void TGpsSample::release()
-{
-	if(_data != NULL) {
-		if(_data->release()) {
-			delete _data;
-		}
-	}
-}
-
 
