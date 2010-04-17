@@ -27,7 +27,9 @@
 
 TTileServerDirect::TTileServerDirect()
 {
-	connect(&_http, SIGNAL(signalNewTile(TTileHttpTrans *)), this, SLOT(slotNewTile(TTileHttpTrans *)));
+	_online = false;
+
+	connect(&_http, SIGNAL(signalNewTile(TTileTransaction *)), this, SLOT(slotNewTile(TTileTransaction *)));
 }
 
 TTileServerDirect::~TTileServerDirect()
@@ -55,6 +57,7 @@ void TTileServerDirect::configure(TSettings &settings, const QString &server, co
 
 	settings.beginGroup(server);
 	serverNames = settings.getValue("httpservers", defaultServer).toStringList();
+	_online = settings.getValue("startonline", true).toBool();
 	settings.endGroup();
 
 	_http.configure(settings, serverNames);
@@ -65,7 +68,7 @@ TTile *TTileServerDirect::load(const TTileRef &ref, TTileClient *client, void *p
 {
 	TTile *tile = _container.get(ref, client, flag);
 
-	if((tile == NULL) && !(flag & TILESERVER_FLAG_DONTLOAD)) {
+	if((tile == NULL) && _online && !(flag & TILESERVER_FLAG_DONTLOAD)) {
 		newTransaction(ref, client, privateData);
 	}
 
@@ -80,7 +83,7 @@ void TTileServerDirect::newTransaction(const TTileRef &ref, TTileClient *client,
 	for(i = 0; (i < _transactions.size()) && (_transactions[i]->ref() != ref); i++);
 
 	if(i == _transactions.size()) {
-		TTileHttpTrans *trans = new TTileHttpTrans(ref);
+		TTileTransaction *trans = new TTileTransaction(ref);
 		trans->addClient(client, privateData);
 		_transactions.append(trans);
 		_http.load(trans);
@@ -99,7 +102,7 @@ void TTileServerDirect::discardTransactions(TTileClient *client)
 	}
 }
 
-void TTileServerDirect::slotNewTile(TTileHttpTrans *trans)
+void TTileServerDirect::slotNewTile(TTileTransaction *trans)
 {
 	QMutexLocker locker(&_mutex);
 

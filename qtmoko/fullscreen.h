@@ -18,34 +18,20 @@
  *
  */
 
-#ifndef TILEHTTPTRANS_H
-#define TILEHTTPTRANS_H
+#ifndef FULLSCREEN_H
+#define FULLSCREEN_H
 
-#include <QList>
-#include <QMutex>
-#include <QBuffer>
+#include <QMainWindow>
+#include <QEvent>
 
-#include "include/tiletransaction.h"
-#include "include/tileclient.h"
-#include "include/tileref.h"
-
-class TTileHttpTrans : public TTileTransaction
+class TFullScreen : public QMainWindow
 {
+	Q_OBJECT
 	public:
-		TTileHttpTrans(const TTileRef &ref);
-		~TTileHttpTrans();
-
-		void setHttpId(int id) { _httpId = id; }
-
-		int httpId() const { return _httpId; }
-		QBuffer &buffer() { return _buffer; }
-
-	private:
-		QMutex _mutex;
-
-		QBuffer _buffer;
-		int _httpId;
+		TFullScreen(QWidget *parent = 0);
+		
+	protected:
+		bool event(QEvent *event);
 };
 
 #endif
-

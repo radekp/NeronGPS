@@ -74,8 +74,7 @@ void TPoiForm::slotAdd(bool /*checked*/)
 
 	connect(keyboardForm, SIGNAL(signalText(QString)), this, SLOT(slotPoiName(QString)));
 
-	keyboardForm->setWindowState(Qt::WindowMaximized);
-	keyboardForm->show();
+	emit signalKeyboardForm(keyboardForm);
 }
 
 void TPoiForm::slotPoiName(QString name)

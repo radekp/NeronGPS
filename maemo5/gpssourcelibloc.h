@@ -18,31 +18,42 @@
  *
  */
 
-#include <QMenuBar>
-#include <QDir>
+#ifndef GPSSOURCELIBLOC_H
+#define GPSSOURCELIBLOC_H
 
-#include "include/platform.h"
-#include "include/gpssourcenmea.h"
-
-TPlatform::TPlatform()
-{
-        _rootDir = QDir::homePath() + QString("/NeronGPS");
-
-//	_gpsSource = new TGpsSourceNmea(QString("/home/root/nmea_sample.txt"));
-        _gpsSource = new TGpsSourceNmea();
+extern "C" {
+#include <location/location-gps-device.h>
+#include <location/location-gpsd-control.h>
 }
 
-TPlatform::~TPlatform()
-{
-    delete _gpsSource;
-}
+#include "include/gpssource.h"
 
-void TPlatform::configure(QMainWindow *mainWindow)
+class TGpsSourceLibloc : public TGpsSourcePlugin
 {
-        _menu = mainWindow->menuBar()->addMenu(QString("&Menu"));
-}
+	Q_OBJECT
+	public:
+		TGpsSourceLibloc();
+		~TGpsSourceLibloc();
 
-void TPlatform::displayAlwaysOn(bool /*alwaysOn*/)
-{
-}
+		QString name() { return QString("Liblocation"); }
+
+		void start();
+
+		void startRawRecording(const QString &/*filename*/) { };
+		void stopRawRecording() { };
+
+	public slots:
+		static void locationChanged(LocationGPSDevice *device, gpointer userdata);
+
+	signals:
+		void signalUpdate(TGpsSample sample);
+
+	private:
+		LocationGPSDevice *_device;
+		LocationGPSDControl *_control;
+
+		void update(LocationGPSDevice *device);
+};
+
+#endif
 

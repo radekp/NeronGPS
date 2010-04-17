@@ -84,6 +84,8 @@ void TAction::configure(TSettings &settings, const QString &section, const QStri
 		displayName = QString("Record");
 	} else if(name == QString("trailer")) {
 		displayName = QString("Display trailer");
+	} else if(name == QString("online")) {
+		displayName = QString("On-line");
 	}
 
 	QStringList list;

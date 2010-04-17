@@ -29,7 +29,7 @@
 #include "include/tilehttpwheel.h"
 #include "include/settings.h"
 #include "include/tileref.h"
-#include "include/tilehttptrans.h"
+#include "include/tiletransaction.h"
 
 class TTileHttpMux : public QObject
 {
@@ -40,15 +40,15 @@ class TTileHttpMux : public QObject
 
 		void configure(TSettings &settings, const QStringList &sections);
 
-		void load(TTileHttpTrans *trans);
+		void load(TTileTransaction *trans);
 
 		const QStringList &serverNames() { return _serverNames; }
 
 	signals:
-		void signalNewTile(TTileHttpTrans *trans);
+		void signalNewTile(TTileTransaction *trans);
 
 	public slots:
-		void slotNewTile(TTileHttpTrans *trans);
+		void slotNewTile(TTileTransaction *trans);
 
 	private:
 		QStringList _serverNames;

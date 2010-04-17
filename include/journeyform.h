@@ -47,6 +47,7 @@ class TJourneyForm : public QWidget
 		void signalReset();
 		void signalTrack(QString name);
 		void signalWayPoint(QString name);
+		void signalKeyboardForm(QWidget *keyboard);
 
 	private:
 		Ui::JourneyForm ui;

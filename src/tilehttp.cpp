@@ -21,6 +21,8 @@
 #include <QtGlobal>
 #include <QtDebug>
 #include <QMessageBox>
+#include <QNetworkRequest>
+#include <QNetworkReply>
 #include <QFile>
 #include <QUrl>
 
@@ -29,7 +31,7 @@
 
 TTileHttp::TTileHttp()
 {
-	connect(this, SIGNAL(requestFinished(int, bool)), this, SLOT(newLoad(int, bool)));
+	connect(this, SIGNAL(finished(QNetworkReply*)), this, SLOT(slotFinished(QNetworkReply*)));
 }
 
 TTileHttp::~TTileHttp()
@@ -38,29 +40,12 @@ TTileHttp::~TTileHttp()
 
 void TTileHttp::setServer(TSettings &settings, const QString &section, const QString &serverURL)
 {
-	QString hostname;
-	int pos;
-
 	settings.beginGroup(section);
 	_template = settings.getValue(serverURL, "http://tile.openstreetmap.org/%3/%1/%2.png").toString();
 	_rootLevel = settings.getValue("rootlevel", 0).toInt();
 	_equatorCentric = settings.getValue("equatorcentric", false).toBool();
 	_snailMode = settings.getValue("snailmode", false).toBool();
 	settings.endGroup();
-
-	hostname = _template;
-
-	pos = hostname.indexOf("//");
-	if(pos != -1) {
-		hostname = hostname.remove(0, pos + 2);
-	}
-
-	pos = hostname.indexOf('/');
-	if(pos != -1) {
-		hostname.truncate(pos);
-	}
-
-	setHost(hostname);
 }
 
 QString TTileHttp::getURL(const TTileRef &ref)
@@ -98,36 +83,44 @@ QString TTileHttp::getURL(const TTileRef &ref)
 	return url;
 }
 
-void TTileHttp::load(TTileHttpTrans *trans)
+void TTileHttp::load(TTileTransaction *trans)
 {
 	QMutexLocker locker(&_mutex);
 
-	trans->setHttpId(get(getURL(trans->ref()), &trans->buffer()));
+	trans->setPrivateData((void *)get(QNetworkRequest(QUrl(getURL(trans->ref())))));
+	
 	_transactions.prepend(trans);
 }
 
-void TTileHttp::newLoad(int id, bool error)
+void TTileHttp::slotFinished(QNetworkReply *reply)
 {
-	TTileHttpTrans *trans = NULL;
+	TTileTransaction *trans = NULL;
 
 	_mutex.lock();
 
 	int i;
-	for(i = 0; (i < _transactions.size()) && (_transactions[i]->httpId() != id); i++);
+	for(i = 0; (i < _transactions.size()) && ((QNetworkReply *)(_transactions[i]->privateData()) != reply); i++);
 	if(i != _transactions.size()) {
 		trans = _transactions.takeAt(i);
+	} else {
+		qDebug() << "Error, unknown transaction";
 	}
 
 	_mutex.unlock();
 
 	if(trans != NULL) {
-		if (error) {
-			qDebug() << errorString();
-		} else if(checkSignature(trans->buffer().data())) {
-			trans->setCompressed(new TTileCompressed(trans->buffer().data()));
+		if(reply->error() == QNetworkReply::NoError) {
+			QByteArray data = reply->readAll();
+
+			if(checkSignature(data)) {
+				trans->setCompressed(new TTileCompressed(data));
+			} else {
+				qDebug() << "Received data aren't a valid image format: " << trans->ref().x() << trans->ref().y() << trans->ref().zoom();
+			}
 		} else {
-			qDebug() << "Received data aren't a valid image format: " << trans->ref().x() << trans->ref().y() << trans->ref().zoom();
+			qDebug() << "Http request error " << reply->error() << " for tile " << trans->ref().x() << trans->ref().y() << trans->ref().zoom();
 		}
+
 		emit signalNewTile(trans);
 	}
 }

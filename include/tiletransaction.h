@@ -52,6 +52,7 @@ class TTileTransaction
 		void addClient(TTileClient *client, void *privateData);
 		void suppressClient(TTileClient *client);
 
+		void setPrivateData(void *data) { _privateData = data; }
 		void setCompressed(TTileCompressed *compressed) { compressed->setRef(ref()); _compressed = compressed; }
 		void setTile(TTile *tile) { tile->setRef(ref()); _tile = tile; }
 
@@ -60,6 +61,7 @@ class TTileTransaction
 		const TTileRef &ref() const { return _ref; }
 		TTileCompressed *compressed() { return _compressed; }
 		TTile *tile() { return _tile; }
+		void *privateData() { return _privateData; }
 
 		void process(TTileContainer &container);
 
@@ -69,6 +71,7 @@ class TTileTransaction
 		TTileRef _ref;
 		TTileCompressed *_compressed;
 		TTile *_tile;
+		void *_privateData;
 
 		QList<TTileClient *> _clients;
 		QList<void *> _privates;

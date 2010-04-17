@@ -58,13 +58,13 @@ void TTileHttpWheel::configure(TSettings &settings, const QString &section, cons
 			TTileHttp *tileHttp;
 			tileHttp = new TTileHttp();
 			tileHttp->setServer(settings, section, type + i);
-			connect(tileHttp, SIGNAL(signalNewTile(TTileHttpTrans *)), this, SLOT(slotNewTile(TTileHttpTrans *)));
+			connect(tileHttp, SIGNAL(signalNewTile(TTileTransaction *)), this, SLOT(slotNewTile(TTileTransaction *)));
 			_servers.append(tileHttp);
 		}
 	}
 }
 
-void TTileHttpWheel::load(TTileHttpTrans *trans)
+void TTileHttpWheel::load(TTileTransaction *trans)
 {
 	if(_servers.size() != 0) {
 		_servers[_next]->load(trans);
@@ -75,7 +75,7 @@ void TTileHttpWheel::load(TTileHttpTrans *trans)
 	}
 }
 
-void TTileHttpWheel::slotNewTile(TTileHttpTrans *trans)
+void TTileHttpWheel::slotNewTile(TTileTransaction *trans)
 {
 	emit signalNewTile(trans);
 }

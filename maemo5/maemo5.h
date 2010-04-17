@@ -18,39 +18,47 @@
  *
  */
 
-#ifndef POIFORM_H
-#define POIFORM_H
+#ifndef MAEMO5_H
+#define MAEMO5_H
 
-#include "ui_poiform.h"
+#include <QMenu>
+#include <QList>
+#include <QMainWindow>
 
-class TPoiForm : public QWidget
+#include "include/gpssource.h"
+#include "include/platform.h"
+
+class TMaemo5 : public QMainWindow, public TPlatform
 {
 	Q_OBJECT
 
 	public:
-		TPoiForm(const QStringList &poiList, int x, int y, const QStringList &keyboard, QWidget *parent = 0, Qt::WFlags f = 0);
-		~TPoiForm();
-		
-	public slots:
-		void slotAdd(bool checked);
-		void slotDelete(bool checked);
-		void slotGoTo(bool checked);
-		void slotDriveTo(bool checked);
-		void slotPoiName(QString name);
-		void slotItemClicked(QListWidgetItem *item);
-		void slotKill();
+		TMaemo5();
+		~TMaemo5();
 
-	signals:
-		void signalPoi(QString name, QString coordinates);
-		void signalDeletePoi(QString poi);
-		void signalGoTo(int x, int y);
-		void signalDriveTo(int x, int y);
-		void signalKeyboardForm(QWidget *keyboard);
+		TGpsSourcePlugin *gpsSource() { return _gpsSource; }
+		QMenu *menu() { return _menu; }
+		const QString &rootDir() { return _rootDir; }
+
+		void displayAlwaysOn(bool alwaysOn);
+		void setMainWidget(QWidget *widget);
+		void newForm(QWidget *widget);
+		void toggleFullScreen();
+
+	public slots:
+		void slotDestroyWidget(QObject *obj);
+
+	protected:
+		void closeEvent(QCloseEvent *);
 
 	private:
-		Ui::PoiForm ui;
+		QWidget *_mainWidget;
+		QList<QWidget *> _forms;
+		bool _fullScreen;
 
-		QStringList _keyboard;
+		TGpsSourcePlugin *_gpsSource;
+		QMenu *_menu;
+		QString _rootDir;
 };
 
 #endif

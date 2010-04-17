@@ -21,10 +21,8 @@
 #ifndef NERONGPS_H
 #define NERONGPS_H
 
-#include <QMainWindow>
 #include <QObject>
 #include <QMenu>
-#include <QStackedWidget>
 
 #include "include/platform.h"
 #include "include/fullscreen.h"
@@ -52,18 +50,18 @@
 #include "include/gpxloader.h"
 #include "include/tracerecorder.h"
 
-class TNeronGPS : public QMainWindow
+class TNeronGPS : public QObject
 {
 	Q_OBJECT
 
 	public:
-		TNeronGPS(QWidget *parent = 0, Qt::WFlags f = 0);
+		TNeronGPS(TPlatform &platform);
 		virtual ~TNeronGPS();
 
 	public slots:
 		void slotDisplayAlwaysOn(bool alwaysOn);
 		void slotFullScreen();
-		void slotDestroyWidget(QObject *obj);
+		void slotNewForm(QWidget *form);
 		void openClock();
 		void openCache();
 		void openGpx();
@@ -74,16 +72,9 @@ class TNeronGPS : public QMainWindow
 		void openMagnification();
 		void openPoi();
 
-	protected:
-		void closeEvent(QCloseEvent *);
-
 	private:
-		bool _displayAlwaysOn;
-		TPlatform _platform;
-		TFullScreen *_fullScreen;
-		QStackedWidget *_fullScreenWidget;
+		TPlatform *_platform;
 
-		QStackedWidget _stack;
 		QMenu _others;
 		QStringList _keyboard;
 
@@ -112,8 +103,6 @@ class TNeronGPS : public QMainWindow
 		TTraceRecorder _recorder;
 
 		TMapWidget *_mapWidget;
-
-		void displayForm(QWidget *form);
 };
 
 #endif

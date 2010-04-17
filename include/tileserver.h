@@ -37,6 +37,8 @@ class TTileServer : public QObject
 
 		void configure(TSettings &settings, const QString &server, const QString &cache);
 
+		bool online() { return _server.online(); }
+
 		const QStringList &getCacheList() { return _server.getCacheList(); }
 		const QString &getCacheDir() { return _server.getCacheDir(); }
 		const QStringList &getServerList() { return _serverNames; }
@@ -49,6 +51,7 @@ class TTileServer : public QObject
 		void discardTransactions(TTileClient *client);
 
 	public slots:
+		void slotOnline(bool online) { _server.setOnline(online); }
 		void slotAddCache();
 		void slotDeleteCache(QString name);
 

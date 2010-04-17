@@ -47,7 +47,7 @@ void TActionsManager::configure(TSettings &settings, const QString &section)
 	QString bottomRight;
 
 	main << "server" << "zoom" << "magnification" << "journey" << "poi" << "canceldrive" << "startbatch" << "stopbatch";
-	alternate << "traces" << "clock" << "caches" << "log" << "displayon" << "record" << "trailer";
+	alternate << "traces" << "clock" << "caches" << "log" << "displayon" << "record" << "trailer" << "online";
 
 	settings.beginGroup(section);
 

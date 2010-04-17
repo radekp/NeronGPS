@@ -29,6 +29,7 @@ TTileTransaction::TTileTransaction(const TTileRef &ref)
 	_ref = ref;
 	_compressed = NULL;
 	_tile = NULL;
+	_privateData = NULL;
 }
 
 TTileTransaction::~TTileTransaction()

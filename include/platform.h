@@ -30,20 +30,16 @@
 class TPlatform
 {
 	public:
-		TPlatform();
-		~TPlatform();
+		virtual ~TPlatform() {}
 
-		void configure(QMainWindow *mainWindow);
+		virtual TGpsSourcePlugin *gpsSource() = 0;
+		virtual QMenu *menu() = 0;
+		virtual const QString &rootDir() = 0;
 
-		TGpsSourcePlugin *gpsSource() { return _gpsSource; }
-		QMenu *menu() { return _menu; }
-		const QString &rootDir() { return _rootDir; }
-		void displayAlwaysOn(bool alwaysOn);
-
-	private:
-		TGpsSourcePlugin *_gpsSource;
-		QMenu *_menu;
-		QString _rootDir;
+		virtual void displayAlwaysOn(bool alwaysOn) = 0;
+		virtual void setMainWidget(QWidget *widget) = 0;
+		virtual void newForm(QWidget *widget) = 0;
+		virtual void toggleFullScreen() = 0;
 };
 
 #endif

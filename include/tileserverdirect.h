@@ -30,7 +30,7 @@
 #include "include/tileref.h"
 #include "include/tileclient.h"
 #include "include/tilehttpmux.h"
-#include "include/tilehttptrans.h"
+#include "include/tiletransaction.h"
 #include "include/tilecontainer.h"
 
 #define TILESERVER_FLAG_DONTGETFROML1	0x0001
@@ -54,6 +54,9 @@ class TTileServerDirect : public QObject
 
 		const QStringList &getServerList() { return _http.serverNames(); }
 
+		bool online() { return _online; }
+		void setOnline(bool online) { _online = online; }
+
 		bool addCache() { return _container.addCache(); }
 		bool deleteCache(QString name) { return _container.deleteCache(name); }
 		const QStringList &getCacheList() { return _container.getCacheList(); }
@@ -67,12 +70,13 @@ class TTileServerDirect : public QObject
 		void discardTransactions(TTileClient *client);
 
 	public slots:
-		void slotNewTile(TTileHttpTrans *trans);
+		void slotNewTile(TTileTransaction *trans);
 
 	private:
 		QMutex _mutex;
+		bool _online;
 
-		QList<TTileHttpTrans *> _transactions; 
+		QList<TTileTransaction *> _transactions; 
 
 		TTileHttpMux _http;
 		TTileContainer _container;

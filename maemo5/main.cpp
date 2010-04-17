@@ -1,9 +1,10 @@
 #include <QtGui/QApplication>
-#include "include/nerongps.h"
+#include "maemo5/maemo5.h"
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    TNeronGPS neronGPS;
+    TMaemo5 maemo5;
     return a.exec();
 }
+

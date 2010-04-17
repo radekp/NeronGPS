@@ -51,7 +51,7 @@ void TTileHttpMux::configure(TSettings &settings, const QStringList &sections)
 		for(j = 0; j < types.size(); j++) {
 			TTileHttpWheel *wheel = new TTileHttpWheel;
 			wheel->configure(settings, sections[i], types[j]);
-			connect(wheel, SIGNAL(signalNewTile(TTileHttpTrans *)), this, SLOT(slotNewTile(TTileHttpTrans *)));
+			connect(wheel, SIGNAL(signalNewTile(TTileTransaction *)), this, SLOT(slotNewTile(TTileTransaction *)));
 			_wheels.append(wheel);
 
 			QString name = TTileHttpName::createName(sections[i], types[j]);
@@ -60,7 +60,7 @@ void TTileHttpMux::configure(TSettings &settings, const QStringList &sections)
 	}
 }
 
-void TTileHttpMux::load(TTileHttpTrans *trans)
+void TTileHttpMux::load(TTileTransaction *trans)
 {
 	int i;
 	for(i = 0; (i < _wheels.size()) && (_wheels[i]->name() != trans->ref().server()); i++);
@@ -72,7 +72,7 @@ void TTileHttpMux::load(TTileHttpTrans *trans)
 	}
 }
 
-void TTileHttpMux::slotNewTile(TTileHttpTrans *trans)
+void TTileHttpMux::slotNewTile(TTileTransaction *trans)
 {
 	emit signalNewTile(trans);
 }

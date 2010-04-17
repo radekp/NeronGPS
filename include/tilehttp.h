@@ -22,15 +22,15 @@
 #define TILEHTTP_H
 
 #include <QObject>
-#include <QHttp>
+#include <QNetworkAccessManager>
 #include <QMutex>
 #include <QBuffer>
 
 #include "include/tileref.h"
-#include "include/tilehttptrans.h"
+#include "include/tiletransaction.h"
 #include "include/settings.h"
 
-class TTileHttp : public QHttp
+class TTileHttp : public QNetworkAccessManager
 {
 	Q_OBJECT
 	public:
@@ -38,17 +38,17 @@ class TTileHttp : public QHttp
 		~TTileHttp();
 
 		void setServer(TSettings &settings, const QString &section, const QString &serverURL);
-		void load(TTileHttpTrans *trans);
+		void load(TTileTransaction *trans);
 
 	signals:
-		void signalNewTile(TTileHttpTrans *trans);
+		void signalNewTile(TTileTransaction *trans);
 
 	public slots:
-		void newLoad(int id, bool error);
+		void slotFinished(QNetworkReply *reply);
 
 	private:
 		QMutex _mutex;
-		QList<TTileHttpTrans *> _transactions;
+		QList<TTileTransaction *> _transactions;
 
 		QString _template;
 		int _rootLevel;

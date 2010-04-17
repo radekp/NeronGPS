@@ -53,8 +53,7 @@ void TJourneyForm::slotNewTrack(bool /*checked*/)
 
 	connect(keyboardForm, SIGNAL(signalText(QString)), this, SLOT(slotTrackName(QString)));
 
-	keyboardForm->setWindowState(Qt::WindowMaximized);
-	keyboardForm->show();
+	emit signalKeyboardForm(keyboardForm);
 }
 
 void TJourneyForm::slotTrackName(QString name)
