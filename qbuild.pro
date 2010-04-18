@@ -44,5 +44,8 @@ build_qtopia {
     HEADERS  += maemo5/maemo5.h maemo5/gpssourcelibloc.h
     SOURCES  += maemo5/main.cpp maemo5/maemo5.cpp maemo5/gpssourcelibloc.cpp
 } else {
+    QT += network
+    HEADERS  += desktop/desktop.h
+    SOURCES  += desktop/main.cpp desktop/desktop.cpp
 }
 
