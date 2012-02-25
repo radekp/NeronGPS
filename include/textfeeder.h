@@ -49,7 +49,7 @@ class TTextFeeder
 		inline TTextFeeder &operator<<(const QString & t) { _content += t; return *this; }
 		inline TTextFeeder &operator<<(const QLatin1String &t) { _content += t.latin1(); return *this; }
 		inline TTextFeeder &operator<<(const QByteArray & t) { _content += t; return *this; }
-		inline TTextFeeder &operator<<(const void *t) { _content += QString::number((uint)t, 16); return *this; }
+		inline TTextFeeder &operator<<(const void *t) { _content += QString::number((ulong)t, 16); return *this; }
 
 	private:
 		QString _content;
