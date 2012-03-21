@@ -52,17 +52,17 @@
 <context>
     <name>ClockForm</name>
     <message>
-        <location filename="ui/clockform.ui" line="44"/>
-        <source>GPS clock, UTC</source>
+        <location filename="ui/clockform.ui" line="67"/>
+        <source>GPS: UTC</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/clockform.ui" line="57"/>
-        <source>System clock, local time</source>
+        <location filename="ui/clockform.ui" line="77"/>
+        <source>Sync</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="ui/clockform.ui" line="70"/>
+        <location filename="ui/clockform.ui" line="84"/>
         <source>Quit</source>
         <translation type="unfinished"></translation>
     </message>
@@ -229,9 +229,9 @@
     </message>
 </context>
 <context>
-    <name>TQtMoko</name>
+    <name>TGpsAppli</name>
     <message>
-        <location filename="qtmoko/qtmoko.cpp" line="61"/>
+        <location filename="appli.cpp" line="53"/>
         <source>NeronGPS</source>
         <comment>application header</comment>
         <translation type="unfinished"></translation>
