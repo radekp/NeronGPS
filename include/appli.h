@@ -57,7 +57,7 @@
 #include "include/gpxloader.h"
 #include "include/tracerecorder.h"
 
-class TGpsAppli : public QWidget
+class TGpsAppli : public QMainWindow
 {
 	Q_OBJECT
 

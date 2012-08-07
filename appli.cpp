@@ -43,7 +43,7 @@
 #include "include/keyboard.h"
 #include "include/converter.h"
 
-TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QWidget(parent, f)
+TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QMainWindow(parent, f)
 {
 	qDebug("In TGpsAppli()");
 
