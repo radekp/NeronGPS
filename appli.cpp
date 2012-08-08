@@ -314,9 +314,10 @@ void TGpsAppli::openPoi()
 bool TGpsAppli::event(QEvent * event)
 {
 #ifdef Q_WS_QWS
-    if(_fullscreen) {        
+    if(_fullscreen) {
         if (event->type() == QEvent::WindowDeactivate) {
             lower();
+			_fullscreen = false;
         } else if (event->type() == QEvent::WindowActivate) {
             QString title = windowTitle();
             setWindowTitle(QLatin1String("_allow_on_top_"));
@@ -330,18 +331,22 @@ bool TGpsAppli::event(QEvent * event)
 
 void TGpsAppli::toggleFullScreen()
 {
-	_fullscreen = !_fullscreen;
 #ifdef Q_WS_QWS
 	if(_fullscreen) {
-		_fullscreen = true;
+		lower();
+		setWindowFlags(windowFlags() & ~Qt::WindowStaysOnTopHint);
+		setWindowState(windowState() & ~Qt::WindowMinimized | Qt::WindowActive);
+		_fullscreen = false;
+		show();
+		_mapWidget->setGeometry(QApplication::desktop()->availableGeometry());
+	}
+	else {
 		setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
 		setWindowState(Qt::WindowFullScreen);
 		showFullScreen();
-		_mapWidget->resize(this->size());
 		raise();
-	} else {
-		lower();
-		showMaximized();
+		_fullscreen = true;
+		_mapWidget->setGeometry(this->geometry());
 	}
 #endif
 }
