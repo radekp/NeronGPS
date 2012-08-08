@@ -75,9 +75,11 @@ class TGpsAppli : public QMainWindow
 		void openZoom();
 		void openMagnification();
 		void openPoi();
+        void enterFullScreen();
 
 	protected:
 		void closeEvent(QCloseEvent *);
+        bool event(QEvent *);
 
 	private:
 		QMenu _others;
@@ -109,6 +111,7 @@ class TGpsAppli : public QMainWindow
 		TTraceRecorder _recorder;
 
 		TMapWidget *_mapWidget;
+        bool _fullscreen;
 };
 
 #endif

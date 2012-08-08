@@ -53,6 +53,7 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QMainWindow(parent, f)
 	setWindowTitle(tr("NeronGPS", "application header"));
 #endif
 
+    _fullscreen = false;
 	showMaximized();
 
 	_server.configure(_settings, "tileserver", "caches");
@@ -90,6 +91,7 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QMainWindow(parent, f)
 	actionsList.append("journey/Journey/main/3");
 	actionsList.append("poi/POI/main/4");
 	actionsList.append("canceldriveto/Cancel drive to/main/5");
+    actionsList.append("fullscreen/Fullscreen/main/6");
 	actionsList.append("traces/Traces/more/0");
 	actionsList.append("clock/Clock/more/1");
 	actionsList.append("cache/Cache/more/2");
@@ -124,6 +126,7 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QMainWindow(parent, f)
 	_actions.connectTrigger("Zoom", this, SLOT(openZoom()));
 	_actions.connectTrigger("Magnification", this, SLOT(openMagnification()));
 	_actions.connectTrigger("POI", this, SLOT(openPoi()));
+    _actions.connectTrigger("Fullscreen", this, SLOT(enterFullScreen()));
 
 	connect(&_drawState, SIGNAL(signalActionState(const QString &, bool, bool)), &_actions, SLOT(slotChangeState(const QString &, bool, bool)));
 	connect(&_batch, SIGNAL(signalActionState(const QString &, bool, bool)), &_actions, SLOT(slotChangeState(const QString &, bool, bool)));
@@ -306,3 +309,32 @@ void TGpsAppli::openPoi()
 	poiForm->show();
 }
 
+bool TGpsAppli::event(QEvent * event)
+{
+#ifdef Q_WS_QWS
+    if(_fullscreen) {        
+        if (event->type() == QEvent::WindowDeactivate) {
+            _fullscreen = false;
+            lower();
+        } else if (event->type() == QEvent::WindowActivate) {
+            QString title = windowTitle();
+            setWindowTitle(QLatin1String("_allow_on_top_"));
+            raise();
+            setWindowTitle(title);
+        }
+    }
+#endif
+    return QWidget::event(event);
+}
+
+void TGpsAppli::enterFullScreen()
+{
+#ifdef Q_WS_QWS
+    _fullscreen = true;
+    setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
+    setWindowState(Qt::WindowFullScreen);
+    showFullScreen();
+    _mapWidget->resize(this->size());
+    raise();
+#endif
+}
