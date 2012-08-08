@@ -75,7 +75,7 @@ class TGpsAppli : public QMainWindow
 		void openZoom();
 		void openMagnification();
 		void openPoi();
-        void enterFullScreen();
+        void toggleFullScreen();
 
 	protected:
 		void closeEvent(QCloseEvent *);

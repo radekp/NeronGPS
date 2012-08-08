@@ -83,6 +83,7 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QMainWindow(parent, f)
 	actionsList.append("zoom_minus/Zoom -/button/0/0/ell2(0,0,100,100)/line(25,50,75,50)");
 	actionsList.append("zoom_plus/Zoom +/button/1/0/ell2(0,0,100,100)/line(25,50,75,50)/line(50,25,50,75)");
 	actionsList.append("auto_center/Auto center/button/-1/0/ell2(0,0,100,100)/ell1(40,40,20,20)/ell1(45,45,10,10)");
+	actionsList.append("fs/Fs/button/-2/0/line(25,50,75,50)/line(25,75,75,75)");
 	actionsList.append("start_batch/Start batch/button/2/0/ell2(0,0,100,100)/line(25,60,75,60)/line(30,50,70,50)/line(35,40,65,40)");
 	actionsList.append("stop_batch/Stop batch/button/2/0/ell2(0,0,100,100)/line(25,25,75,75)/line(25,75,75,25)");
 	actionsList.append("server/Server/main/0");
@@ -106,6 +107,7 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QMainWindow(parent, f)
 	_actions.connectTrigger("Zoom +", &_drawState, SLOT(slotZoomPlus()));
 	_actions.connectTrigger("Auto center", &_drawState, SLOT(slotAutoOn()));
 	_actions.connectChange("Auto center", &_drawState, SLOT(slotRefresh()));
+	_actions.connectTrigger("Fs", this, SLOT(toggleFullScreen()));
 	_actions.connectTrigger("Start batch", &_drawState, SLOT(slotTriggerBatchLoading()));
 	_actions.connectChange("Start batch", &_drawState, SLOT(slotRefresh()));
 	_actions.connectTrigger("Stop batch", &_batch, SLOT(slotStopBatchLoading()));
@@ -126,7 +128,7 @@ TGpsAppli::TGpsAppli(QWidget *parent, Qt::WFlags f) : QMainWindow(parent, f)
 	_actions.connectTrigger("Zoom", this, SLOT(openZoom()));
 	_actions.connectTrigger("Magnification", this, SLOT(openMagnification()));
 	_actions.connectTrigger("POI", this, SLOT(openPoi()));
-    _actions.connectTrigger("Fullscreen", this, SLOT(enterFullScreen()));
+    _actions.connectTrigger("Fullscreen", this, SLOT(toggleFullScreen()));
 
 	connect(&_drawState, SIGNAL(signalActionState(const QString &, bool, bool)), &_actions, SLOT(slotChangeState(const QString &, bool, bool)));
 	connect(&_batch, SIGNAL(signalActionState(const QString &, bool, bool)), &_actions, SLOT(slotChangeState(const QString &, bool, bool)));
@@ -326,14 +328,20 @@ bool TGpsAppli::event(QEvent * event)
     return QWidget::event(event);
 }
 
-void TGpsAppli::enterFullScreen()
+void TGpsAppli::toggleFullScreen()
 {
+	_fullscreen = !_fullscreen;
 #ifdef Q_WS_QWS
-    _fullscreen = true;
-    setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
-    setWindowState(Qt::WindowFullScreen);
-    showFullScreen();
-    _mapWidget->resize(this->size());
-    raise();
+	if(_fullscreen) {
+		_fullscreen = true;
+		setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
+		setWindowState(Qt::WindowFullScreen);
+		showFullScreen();
+		_mapWidget->resize(this->size());
+		raise();
+	} else {
+		lower();
+		showMaximized();
+	}
 #endif
 }
