@@ -314,7 +314,6 @@ bool TGpsAppli::event(QEvent * event)
 #ifdef Q_WS_QWS
     if(_fullscreen) {        
         if (event->type() == QEvent::WindowDeactivate) {
-            _fullscreen = false;
             lower();
         } else if (event->type() == QEvent::WindowActivate) {
             QString title = windowTitle();
